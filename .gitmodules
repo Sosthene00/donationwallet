@@ -1,4 +1,4 @@
 [submodule "rust"]
 	path = rust
-	url = https://github.com/cygnet3/sp-backend.git
+	url = https://github.com/Sosthene00/sp-backend.git
 	branch = master
