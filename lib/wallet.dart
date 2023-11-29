@@ -6,6 +6,15 @@ import 'package:donationwallet/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
+const String label = "default";
+
+Future<String> getPath() async {
+  final Directory appDocumentsDir = await getApplicationSupportDirectory();
+  final String path = appDocumentsDir.path;
+
+  return '$path/$label';
+}
+
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
 
@@ -29,7 +38,7 @@ class _WalletScreenState extends State<WalletScreen> {
   void initState() {
     super.initState();
     _setup();
-    startTimer();
+    // startTimer();
   }
 
   @override
@@ -42,14 +51,32 @@ class _WalletScreenState extends State<WalletScreen> {
     Future.delayed(const Duration(seconds: 1), () {
       _timer = Timer.periodic(const Duration(seconds: 5), (Timer t) async {
         if (!scanning) {
-          final peercount = await api.getPeerCount();
-          final info = await api.getWalletInfo();
+          SecureStorageService secureStorage = SecureStorageService();
+          final encryptedWallet = await secureStorage.read(key: label);
+          if (encryptedWallet == null) {
+            throw Exception("Wallet is not set up");
+          }
+          try {
+            final peercount = await api.getPeerCount();
+            setState(() {
+              this.peercount = peercount;
+            });
+          } catch (e) {
+            print(e);
+          }
+          try {
+            final info = await api.getWalletInfo(blob: encryptedWallet);
+            setState(() {
+              scanheight = info.scanHeight;
+              tipheight = info.blockTip;
+            });
+          } catch (e) {
+            print(e);
+          }
+          final amt = await api.getWalletBalance(blob: encryptedWallet);
 
           setState(() {
-            scanheight = info.scanHeight;
-            tipheight = info.blockTip;
-            balance = info.amount;
-            this.peercount = peercount;
+            balance = amt;
           });
         }
       });
@@ -57,7 +84,12 @@ class _WalletScreenState extends State<WalletScreen> {
   }
 
   Future<void> updateWalletInfo() async {
-    final info = await api.getWalletInfo();
+    SecureStorageService secureStorage = SecureStorageService();
+    final encryptedWallet = await secureStorage.read(key: label);
+    if (encryptedWallet == null) {
+      throw Exception("Wallet is not set up");
+    }
+    final info = await api.getWalletInfo(blob: encryptedWallet);
     setState(() {
       scanheight = info.scanHeight;
       tipheight = info.blockTip;
@@ -91,37 +123,47 @@ class _WalletScreenState extends State<WalletScreen> {
       });
     });
 
-    final Directory appDocumentsDir = await getApplicationSupportDirectory();
-
     SecureStorageService secureStorage = SecureStorageService();
-    final scanSk = (await secureStorage.read(key: 'scan_sk'))!;
-    final spendPk = (await secureStorage.read(key: 'spend_pk'))!;
-    final isTestnet = (await secureStorage.read(key: 'network'))! != 'mainnet';
-    final birthday = int.parse((await secureStorage.read(key: 'birthday'))!);
+    final walletExists = await secureStorage.isInitialized();
 
-    // this sets up everything except nakamoto
-    await api.setup(
-      filesDir: appDocumentsDir.path,
-      scanSk: scanSk,
-      spendPk: spendPk,
-      isTestnet: isTestnet,
-      birthday: birthday,
-    );
+    if (!walletExists) {
+      // First create a wallet
+      final newWallet = await api.setup(
+        label: await getPath(),
+        network: "signet",
+      );
+      await secureStorage.write(key: label, value: newWallet);
+    }
 
-    final amt = await api.getWalletBalance();
-    setState(() {
-      balance = amt;
-    });
-
+    final wallet = await secureStorage.read(key: label);
+    if (wallet == null) {
+      Exception("Can't find wallet");
+    } else {
+      final amt = await api.getWalletBalance(blob: wallet);
+      setState(() {
+        balance = amt;
+      });
+    }
     // this starts nakamoto, will block forever (or until client is restarted)
     api.startNakamoto();
   }
 
   Future<void> _scanToTip() async {
-    scanning = true;
-    await updateWalletInfo();
-    await api.scanToTip();
-    scanning = false;
+    if (!scanning) {
+      SecureStorageService secureStorage = SecureStorageService();
+      final encryptedWallet = await secureStorage.read(key: label);
+      if (encryptedWallet == null) {
+        throw Exception("Wallet is not set up");
+      }
+      scanning = true;
+      // await updateWalletInfo();
+      try {
+        await api.scanToTip(blob: encryptedWallet);
+      } catch (e) {
+        print('scanToTip failed with exception: $e');
+      }
+      scanning = false;
+    }
   }
 
   Widget showScanText() {
@@ -144,8 +186,8 @@ class _WalletScreenState extends State<WalletScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
+    return Scaffold(
+      body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           const SizedBox(

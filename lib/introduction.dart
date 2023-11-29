@@ -1,6 +1,5 @@
-import 'package:donationwallet/customwallet.dart';
 import 'package:donationwallet/home.dart';
-import 'package:donationwallet/storage.dart';
+import 'package:donationwallet/restore.dart';
 import 'package:flutter/material.dart';
 
 class IntroductionPage extends StatelessWidget {
@@ -28,12 +27,10 @@ class IntroductionPage extends StatelessWidget {
                   ),
                   onPressed: () async {
                     final navigator = Navigator.of(context);
-                    await SecureStorageService()
-                        .initializeWithDefaultSettings();
                     navigator.pushReplacement(MaterialPageRoute(
                         builder: (context) => const MyHomePage()));
                   },
-                  child: const Text('Use default wallet'),
+                  child: const Text('Create new wallet'),
                 ),
               ),
             ),
@@ -52,9 +49,9 @@ class IntroductionPage extends StatelessWidget {
                   ),
                   onPressed: () {
                     Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const CustomWalletPage()));
+                        builder: (context) => RestoreScreen()));
                   },
-                  child: const Text('Use custom settings'),
+                  child: const Text('Restore existing wallet'),
                 ),
               ),
             ),

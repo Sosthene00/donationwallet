@@ -1,7 +1,7 @@
 import 'package:donationwallet/ffi.dart';
+import 'package:donationwallet/introduction.dart';
 import 'package:donationwallet/storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -22,7 +22,7 @@ class SettingsScreen extends StatelessWidget {
         ),
         ElevatedButton(
           onPressed: () async {
-            await api.resetWallet();
+            // await api.resetWallet();
             await api.restartNakamoto();
           },
           style: ElevatedButton.styleFrom(
@@ -32,9 +32,11 @@ class SettingsScreen extends StatelessWidget {
         ),
         ElevatedButton(
           onPressed: () async {
-            await api.resetWallet();
             await SecureStorageService().resetWallet();
-            SystemNavigator.pop();
+            // await api.restartNakamoto();
+            final navigator = Navigator.of(context);
+            navigator.pushReplacement(MaterialPageRoute(
+                builder: (context) => const IntroductionPage()));
           },
           style: ElevatedButton.styleFrom(
             minimumSize: const Size(double.infinity, 50),

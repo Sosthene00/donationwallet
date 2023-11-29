@@ -4,11 +4,9 @@ import 'package:donationwallet/home.dart';
 import 'package:donationwallet/introduction.dart';
 import 'package:donationwallet/storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
-  // load default values from environment file (see .env-sample)
-  await dotenv.load(fileName: ".env");
+  WidgetsFlutterBinding.ensureInitialized();
   bool initialized = await SecureStorageService().isInitialized();
 
   Widget firstPage =

@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:donationwallet/ffi.dart';
+import 'package:donationwallet/storage.dart';
+import 'package:donationwallet/wallet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -21,15 +23,27 @@ class _InformationScreenState extends State<InformationScreen> {
 
   Future<void> _setup() async {
     await Future.delayed(const Duration(milliseconds: 1500));
-    final addr = await api.getReceivingAddress();
-    final birthday = await api.getBirthday();
-    final walletinfo = await api.getWalletInfo();
+    SecureStorageService secureStorage = SecureStorageService();
+    final encryptedWallet = await secureStorage.read(key: label);
+    if (encryptedWallet == null) {
+      throw Exception("Wallet is not set up");
+    }
+    final addr = await api.getReceivingAddress(blob: encryptedWallet);
+    // final birthday = await api.getBirthday();
+    try {
+      final info = await api.getWalletInfo(blob: encryptedWallet);
+      setState(() {
+        scanheight = info.scanHeight;
+        blockheight = info.blockTip;
+      });
+    } catch (e) {
+      LogEntry(msg: '$e');
+      print('$e');
+    }
 
     setState(() {
       address = addr;
-      this.birthday = birthday;
-      scanheight = walletinfo.scanHeight;
-      blockheight = walletinfo.blockTip;
+      // this.birthday = birthday;
     });
   }
 
@@ -37,7 +51,7 @@ class _InformationScreenState extends State<InformationScreen> {
   void initState() {
     super.initState();
     _setup();
-    startTimer();
+    // startTimer();
   }
 
   @override
@@ -49,12 +63,21 @@ class _InformationScreenState extends State<InformationScreen> {
   void startTimer() {
     Future.delayed(const Duration(seconds: 1), () {
       _timer = Timer.periodic(const Duration(seconds: 5), (Timer t) async {
-        final info = await api.getWalletInfo();
-
-        setState(() {
-          scanheight = info.scanHeight;
-          blockheight = info.blockTip;
-        });
+        SecureStorageService secureStorage = SecureStorageService();
+        final encryptedWallet = await secureStorage.read(key: label);
+        if (encryptedWallet == null) {
+          throw Exception("Wallet is not set up");
+        }
+        try {
+          final info = await api.getWalletInfo(blob: encryptedWallet);
+          setState(() {
+            scanheight = info.scanHeight;
+            blockheight = info.blockTip;
+          });
+        } catch (e) {
+          LogEntry(msg: '$e');
+          print('$e');
+        }
       });
     });
   }
