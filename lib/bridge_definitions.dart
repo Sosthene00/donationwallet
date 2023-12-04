@@ -33,6 +33,10 @@ abstract class Rust {
 
   FlutterRustBridgeTaskConstMeta get kStartNakamotoConstMeta;
 
+  Future<void> stopNakamoto({dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kStopNakamotoConstMeta;
+
   Future<void> restartNakamoto({dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kRestartNakamotoConstMeta;
@@ -41,12 +45,16 @@ abstract class Rust {
 
   FlutterRustBridgeTaskConstMeta get kGetPeerCountConstMeta;
 
-  Future<void> scanNextNBlocks(
+  Future<int> getTip({dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kGetTipConstMeta;
+
+  Future<String> scanNextNBlocks(
       {required String blob, required int n, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kScanNextNBlocksConstMeta;
 
-  Future<void> scanToTip({required String blob, dynamic hint});
+  Future<String> scanToTip({required String blob, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kScanToTipConstMeta;
 
@@ -61,6 +69,11 @@ abstract class Rust {
   Future<String> getReceivingAddress({required String blob, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kGetReceivingAddressConstMeta;
+
+  Future<List<String>> getSpendableOutputs(
+      {required String blob, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kGetSpendableOutputsConstMeta;
 }
 
 class LogEntry {

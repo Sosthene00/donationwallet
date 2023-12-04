@@ -105,7 +105,7 @@ class RustImpl implements Rust {
     return _platform.executeNormal(FlutterRustBridgeTask(
       callFfi: (port_) => _platform.inner.wire_start_nakamoto(port_),
       parseSuccessData: _wire2api_unit,
-      parseErrorData: null,
+      parseErrorData: _wire2api_String,
       constMeta: kStartNakamotoConstMeta,
       argValues: [],
       hint: hint,
@@ -118,11 +118,28 @@ class RustImpl implements Rust {
         argNames: [],
       );
 
+  Future<void> stopNakamoto({dynamic hint}) {
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner.wire_stop_nakamoto(port_),
+      parseSuccessData: _wire2api_unit,
+      parseErrorData: _wire2api_String,
+      constMeta: kStopNakamotoConstMeta,
+      argValues: [],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kStopNakamotoConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "stop_nakamoto",
+        argNames: [],
+      );
+
   Future<void> restartNakamoto({dynamic hint}) {
     return _platform.executeNormal(FlutterRustBridgeTask(
       callFfi: (port_) => _platform.inner.wire_restart_nakamoto(port_),
       parseSuccessData: _wire2api_unit,
-      parseErrorData: null,
+      parseErrorData: _wire2api_String,
       constMeta: kRestartNakamotoConstMeta,
       argValues: [],
       hint: hint,
@@ -139,7 +156,7 @@ class RustImpl implements Rust {
     return _platform.executeNormal(FlutterRustBridgeTask(
       callFfi: (port_) => _platform.inner.wire_get_peer_count(port_),
       parseSuccessData: _wire2api_u32,
-      parseErrorData: _wire2api_FrbAnyhowException,
+      parseErrorData: _wire2api_String,
       constMeta: kGetPeerCountConstMeta,
       argValues: [],
       hint: hint,
@@ -152,15 +169,32 @@ class RustImpl implements Rust {
         argNames: [],
       );
 
-  Future<void> scanNextNBlocks(
+  Future<int> getTip({dynamic hint}) {
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner.wire_get_tip(port_),
+      parseSuccessData: _wire2api_u32,
+      parseErrorData: _wire2api_String,
+      constMeta: kGetTipConstMeta,
+      argValues: [],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kGetTipConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "get_tip",
+        argNames: [],
+      );
+
+  Future<String> scanNextNBlocks(
       {required String blob, required int n, dynamic hint}) {
     var arg0 = _platform.api2wire_String(blob);
     var arg1 = api2wire_u32(n);
     return _platform.executeNormal(FlutterRustBridgeTask(
       callFfi: (port_) =>
           _platform.inner.wire_scan_next_n_blocks(port_, arg0, arg1),
-      parseSuccessData: _wire2api_unit,
-      parseErrorData: _wire2api_FrbAnyhowException,
+      parseSuccessData: _wire2api_String,
+      parseErrorData: _wire2api_String,
       constMeta: kScanNextNBlocksConstMeta,
       argValues: [blob, n],
       hint: hint,
@@ -173,12 +207,12 @@ class RustImpl implements Rust {
         argNames: ["blob", "n"],
       );
 
-  Future<void> scanToTip({required String blob, dynamic hint}) {
+  Future<String> scanToTip({required String blob, dynamic hint}) {
     var arg0 = _platform.api2wire_String(blob);
     return _platform.executeNormal(FlutterRustBridgeTask(
       callFfi: (port_) => _platform.inner.wire_scan_to_tip(port_, arg0),
-      parseSuccessData: _wire2api_unit,
-      parseErrorData: _wire2api_FrbAnyhowException,
+      parseSuccessData: _wire2api_String,
+      parseErrorData: _wire2api_String,
       constMeta: kScanToTipConstMeta,
       argValues: [blob],
       hint: hint,
@@ -196,7 +230,7 @@ class RustImpl implements Rust {
     return _platform.executeNormal(FlutterRustBridgeTask(
       callFfi: (port_) => _platform.inner.wire_get_wallet_info(port_, arg0),
       parseSuccessData: _wire2api_scan_status,
-      parseErrorData: _wire2api_FrbAnyhowException,
+      parseErrorData: _wire2api_String,
       constMeta: kGetWalletInfoConstMeta,
       argValues: [blob],
       hint: hint,
@@ -246,17 +280,37 @@ class RustImpl implements Rust {
         argNames: ["blob"],
       );
 
+  Future<List<String>> getSpendableOutputs(
+      {required String blob, dynamic hint}) {
+    var arg0 = _platform.api2wire_String(blob);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) =>
+          _platform.inner.wire_get_spendable_outputs(port_, arg0),
+      parseSuccessData: _wire2api_StringList,
+      parseErrorData: _wire2api_String,
+      constMeta: kGetSpendableOutputsConstMeta,
+      argValues: [blob],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kGetSpendableOutputsConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "get_spendable_outputs",
+        argNames: ["blob"],
+      );
+
   void dispose() {
     _platform.dispose();
   }
 // Section: wire2api
 
-  FrbAnyhowException _wire2api_FrbAnyhowException(dynamic raw) {
-    return FrbAnyhowException(raw as String);
-  }
-
   String _wire2api_String(dynamic raw) {
     return raw as String;
+  }
+
+  List<String> _wire2api_StringList(dynamic raw) {
+    return (raw as List<dynamic>).cast<String>();
   }
 
   LogEntry _wire2api_log_entry(dynamic raw) {
@@ -526,6 +580,20 @@ class RustWire implements FlutterRustBridgeWireBase {
   late final _wire_start_nakamoto =
       _wire_start_nakamotoPtr.asFunction<void Function(int)>();
 
+  void wire_stop_nakamoto(
+    int port_,
+  ) {
+    return _wire_stop_nakamoto(
+      port_,
+    );
+  }
+
+  late final _wire_stop_nakamotoPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'wire_stop_nakamoto');
+  late final _wire_stop_nakamoto =
+      _wire_stop_nakamotoPtr.asFunction<void Function(int)>();
+
   void wire_restart_nakamoto(
     int port_,
   ) {
@@ -553,6 +621,18 @@ class RustWire implements FlutterRustBridgeWireBase {
           'wire_get_peer_count');
   late final _wire_get_peer_count =
       _wire_get_peer_countPtr.asFunction<void Function(int)>();
+
+  void wire_get_tip(
+    int port_,
+  ) {
+    return _wire_get_tip(
+      port_,
+    );
+  }
+
+  late final _wire_get_tipPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>('wire_get_tip');
+  late final _wire_get_tip = _wire_get_tipPtr.asFunction<void Function(int)>();
 
   void wire_scan_next_n_blocks(
     int port_,
@@ -639,6 +719,23 @@ class RustWire implements FlutterRustBridgeWireBase {
           ffi.Void Function(ffi.Int64,
               ffi.Pointer<wire_uint_8_list>)>>('wire_get_receiving_address');
   late final _wire_get_receiving_address = _wire_get_receiving_addressPtr
+      .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
+
+  void wire_get_spendable_outputs(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> blob,
+  ) {
+    return _wire_get_spendable_outputs(
+      port_,
+      blob,
+    );
+  }
+
+  late final _wire_get_spendable_outputsPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int64,
+              ffi.Pointer<wire_uint_8_list>)>>('wire_get_spendable_outputs');
+  late final _wire_get_spendable_outputs = _wire_get_spendable_outputsPtr
       .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
 
   ffi.Pointer<wire_uint_8_list> new_uint_8_list_0(

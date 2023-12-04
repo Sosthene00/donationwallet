@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:donationwallet/ffi.dart';
@@ -33,12 +34,13 @@ class _WalletScreenState extends State<WalletScreen> {
 
   bool scanning = false;
   double progress = 0.0;
+  String lastScan = "";
 
   @override
   void initState() {
     super.initState();
     _setup();
-    // startTimer();
+    startTimer();
   }
 
   @override
@@ -62,22 +64,20 @@ class _WalletScreenState extends State<WalletScreen> {
               this.peercount = peercount;
             });
           } catch (e) {
-            print(e);
+            throw Exception("getPeerCount returned error: ${e.toString()}");
           }
-          try {
-            final info = await api.getWalletInfo(blob: encryptedWallet);
-            setState(() {
-              scanheight = info.scanHeight;
-              tipheight = info.blockTip;
-            });
-          } catch (e) {
-            print(e);
-          }
-          final amt = await api.getWalletBalance(blob: encryptedWallet);
+          if (peercount > 0) {
+            try {
+              await updateWalletInfo();
+            } catch (e) {
+              print("getWalletInfo returned error: ${e.toString()}");
+            }
+            final amt = await api.getWalletBalance(blob: encryptedWallet);
 
-          setState(() {
-            balance = amt;
-          });
+            setState(() {
+              balance = amt;
+            });
+          }
         }
       });
     });
@@ -89,11 +89,15 @@ class _WalletScreenState extends State<WalletScreen> {
     if (encryptedWallet == null) {
       throw Exception("Wallet is not set up");
     }
-    final info = await api.getWalletInfo(blob: encryptedWallet);
-    setState(() {
-      scanheight = info.scanHeight;
-      tipheight = info.blockTip;
-    });
+    try {
+      final info = await api.getWalletInfo(blob: encryptedWallet);
+      setState(() {
+        scanheight = info.scanHeight;
+        tipheight = info.blockTip;
+      });
+    } catch (e) {
+      throw Exception("getWalletInfo failed with error: ${e.toString()}");
+    }
   }
 
   Future<void> _setup() async {
@@ -148,6 +152,22 @@ class _WalletScreenState extends State<WalletScreen> {
     api.startNakamoto();
   }
 
+  Future<void> _updateLastScan() async {
+    if (!scanning) {
+      SecureStorageService secureStorage = SecureStorageService();
+      final encryptedWallet = await secureStorage.read(key: label);
+      if (encryptedWallet == null) {
+        throw Exception("Wallet is not set up");
+      }
+
+      final parsedWallet = jsonDecode(encryptedWallet);
+      print("$parsedWallet");
+      lastScan = parsedWallet['timestamp'];
+    } else {
+      throw Exception("Currently scanning for new outputs");
+    }
+  }
+
   Future<void> _scanToTip() async {
     if (!scanning) {
       SecureStorageService secureStorage = SecureStorageService();
@@ -156,11 +176,13 @@ class _WalletScreenState extends State<WalletScreen> {
         throw Exception("Wallet is not set up");
       }
       scanning = true;
-      // await updateWalletInfo();
       try {
-        await api.scanToTip(blob: encryptedWallet);
+        final updatedWallet = await api.scanToTip(blob: encryptedWallet);
+        await secureStorage.write(key: label, value: updatedWallet);
+        // now update lastScan
+        await _updateLastScan();
       } catch (e) {
-        print('scanToTip failed with exception: $e');
+        print(e.toString());
       }
       scanning = false;
     }

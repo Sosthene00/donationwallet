@@ -32,9 +32,13 @@ class SettingsScreen extends StatelessWidget {
         ),
         ElevatedButton(
           onPressed: () async {
-            await SecureStorageService().resetWallet();
-            // await api.restartNakamoto();
             final navigator = Navigator.of(context);
+            try {
+              await SecureStorageService().resetWallet();
+              await api.stopNakamoto();
+            } catch (e) {
+              throw Exception("Failed to wipe wallet: ${e.toString()}");
+            }
             navigator.pushReplacement(MaterialPageRoute(
                 builder: (context) => const IntroductionPage()));
           },
