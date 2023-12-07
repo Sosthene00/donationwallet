@@ -1,4 +1,5 @@
 import 'package:donationwallet/information.dart';
+import 'package:donationwallet/outputs.dart';
 import 'package:donationwallet/settings.dart';
 import 'package:donationwallet/wallet.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +15,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
   final List<Widget> _widgetOptions = [
     const WalletScreen(),
-    const InformationScreen(),
+    const OutputsScreen(),
     const SettingsScreen(),
   ];
 
@@ -41,9 +42,13 @@ class _MyHomePageState extends State<MyHomePage> {
             icon: Icon(Icons.wallet),
             label: 'Wallet',
           ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(Icons.info_outline),
+          //   label: 'Info',
+          // ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.info_outline),
-            label: 'Info',
+            icon: Icon(Icons.account_balance),
+            label: 'Outputs',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
