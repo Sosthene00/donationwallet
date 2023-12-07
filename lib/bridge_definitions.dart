@@ -49,18 +49,10 @@ abstract class Rust {
 
   FlutterRustBridgeTaskConstMeta get kGetTipConstMeta;
 
-  Future<String> scanNextNBlocks(
-      {required String blob, required int n, dynamic hint});
+  Future<String> scanFrom(
+      {required String blob, required int height, dynamic hint});
 
-  FlutterRustBridgeTaskConstMeta get kScanNextNBlocksConstMeta;
-
-  Future<String> scanToTip({required String blob, dynamic hint});
-
-  FlutterRustBridgeTaskConstMeta get kScanToTipConstMeta;
-
-  Future<ScanStatus> getWalletInfo({required String blob, dynamic hint});
-
-  FlutterRustBridgeTaskConstMeta get kGetWalletInfoConstMeta;
+  FlutterRustBridgeTaskConstMeta get kScanFromConstMeta;
 
   Future<int> getWalletBalance({required String blob, dynamic hint});
 
@@ -69,6 +61,11 @@ abstract class Rust {
   Future<String> getReceivingAddress({required String blob, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kGetReceivingAddressConstMeta;
+
+  Future<String> setWalletBirthday(
+      {required String blob, required int newBirthday, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kSetWalletBirthdayConstMeta;
 
   Future<List<String>> getSpendableOutputs(
       {required String blob, dynamic hint});
@@ -93,15 +90,5 @@ class ScanProgress {
     required this.start,
     required this.current,
     required this.end,
-  });
-}
-
-class ScanStatus {
-  final int scanHeight;
-  final int blockTip;
-
-  const ScanStatus({
-    required this.scanHeight,
-    required this.blockTip,
   });
 }
