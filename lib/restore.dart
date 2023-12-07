@@ -18,22 +18,23 @@ class _RestoreScreenState extends State<RestoreScreen> {
     super.dispose();
   }
 
-  void _restoreWallet() async {
-    String seedWords = _wordsController.text.toString();
+  Future<void> _restoreWallet() async {
+    String seedWords = _wordsController.text;
 
     // Add your restoration logic here
     SecureStorageService secureStorage = SecureStorageService();
     final walletExists = await secureStorage.isInitialized();
 
-    if (!walletExists) {
-      // First create a wallet
-      final newWallet = await api.setup(
-        label: await getPath(),
-        network: "signet",
-        seedWords: seedWords,
-      );
-      await secureStorage.write(key: label, value: newWallet);
+    if (walletExists) {
+      await secureStorage.resetWallet();
     }
+
+    final newWallet = await api.setup(
+      label: await getPath(),
+      network: "signet",
+      seedWords: seedWords,
+    );
+    await secureStorage.write(key: label, value: newWallet);
   }
 
   @override
@@ -58,9 +59,9 @@ class _RestoreScreenState extends State<RestoreScreen> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                _restoreWallet;
+              onPressed: () async {
                 final navigator = Navigator.of(context);
+                await _restoreWallet();
                 navigator.pushReplacement(MaterialPageRoute(
                     builder: (context) => const MyHomePage()));
               },
