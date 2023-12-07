@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:donationwallet/ffi.dart';
+import 'package:donationwallet/information.dart';
 import 'package:donationwallet/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -27,6 +28,7 @@ class _WalletScreenState extends State<WalletScreen> {
   int balance = 0;
   int tipheight = 0;
   int scanheight = 0;
+  int birthday = 0;
   int peercount = 0;
   Timer? _timer;
 
@@ -34,7 +36,6 @@ class _WalletScreenState extends State<WalletScreen> {
 
   bool scanning = false;
   double progress = 0.0;
-  String lastScan = "";
 
   @override
   void initState() {
@@ -68,42 +69,27 @@ class _WalletScreenState extends State<WalletScreen> {
           }
           if (peercount > 0) {
             try {
-              await updateWalletInfo();
+              final newTip = await api.getTip();
+              final amt = await api.getWalletBalance(blob: encryptedWallet);
+              setState(() {
+                tipheight = newTip;
+                balance = amt;
+              });
             } catch (e) {
-              print("getWalletInfo returned error: ${e.toString()}");
+              print("getTip returned error: ${e.toString()}");
             }
-            final amt = await api.getWalletBalance(blob: encryptedWallet);
-
-            setState(() {
-              balance = amt;
-            });
           }
         }
       });
     });
   }
 
-  Future<void> updateWalletInfo() async {
-    SecureStorageService secureStorage = SecureStorageService();
-    final encryptedWallet = await secureStorage.read(key: label);
-    if (encryptedWallet == null) {
-      throw Exception("Wallet is not set up");
-    }
-    try {
-      final info = await api.getWalletInfo(blob: encryptedWallet);
-      setState(() {
-        scanheight = info.scanHeight;
-        tipheight = info.blockTip;
-      });
-    } catch (e) {
-      throw Exception("getWalletInfo failed with error: ${e.toString()}");
-    }
-  }
-
   Future<void> _setup() async {
     api.createLogStream().listen((event) {
       print('RUST: ${event.msg}');
     });
+
+    print("Starting _setup");
 
     api.createScanProgressStream().listen(((event) {
       int start = event.start;
@@ -141,30 +127,28 @@ class _WalletScreenState extends State<WalletScreen> {
 
     final wallet = await secureStorage.read(key: label);
     if (wallet == null) {
-      Exception("Can't find wallet");
+      throw Exception("Can't find wallet");
     } else {
       final amt = await api.getWalletBalance(blob: wallet);
+      final address = await api.getReceivingAddress(blob: wallet);
       setState(() {
         balance = amt;
+        spaddress = address;
       });
     }
-    // this starts nakamoto, will block forever (or until client is restarted)
-    api.startNakamoto();
+
+    try {
+      await api.startNakamoto();
+    } catch (e) {
+      throw Exception("Failed to start nakamoto with error: ${e.toString()}");
+    }
+
+    print("Finished _setup");
   }
 
-  Future<void> _updateLastScan() async {
-    if (!scanning) {
-      SecureStorageService secureStorage = SecureStorageService();
-      final encryptedWallet = await secureStorage.read(key: label);
-      if (encryptedWallet == null) {
-        throw Exception("Wallet is not set up");
-      }
-
-      final parsedWallet = jsonDecode(encryptedWallet);
-      print("$parsedWallet");
-      lastScan = parsedWallet['timestamp'];
-    } else {
-      throw Exception("Currently scanning for new outputs");
+  Future<void> _shutdown() async {
+    while (scanning) {
+      print("Waiting for scan to finish");
     }
   }
 
@@ -177,14 +161,26 @@ class _WalletScreenState extends State<WalletScreen> {
       }
       scanning = true;
       try {
-        final updatedWallet = await api.scanToTip(blob: encryptedWallet);
+        final updatedWallet =
+            await api.scanFrom(blob: encryptedWallet, height: birthday);
+
+        final newBalance = await api.getWalletBalance(blob: updatedWallet);
+        final parsedWallet = json.decode(updatedWallet);
+        final scanStatus = parsedWallet['scan_status'];
+        setState(() {
+          balance = newBalance;
+          scanheight = scanStatus['scan_height'];
+          tipheight = scanStatus['block_tip'];
+          birthday = scanStatus['birthday'];
+        });
+
         await secureStorage.write(key: label, value: updatedWallet);
-        // now update lastScan
-        await _updateLastScan();
       } catch (e) {
         print(e.toString());
       }
       scanning = false;
+    } else {
+      print("Scanning already in progress");
     }
   }
 
@@ -206,6 +202,12 @@ class _WalletScreenState extends State<WalletScreen> {
     );
   }
 
+  void updateWalletBirthday(int birthday) {
+    setState(() {
+      this.birthday = birthday;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -217,7 +219,7 @@ class _WalletScreenState extends State<WalletScreen> {
           ),
           Text('Nakamoto peer count: $peercount'),
           const SizedBox(
-            height: 80,
+            height: 40,
           ),
           Text(
             'Balance: $balance',
@@ -225,8 +227,8 @@ class _WalletScreenState extends State<WalletScreen> {
           ),
           const Spacer(),
           SizedBox(
-            width: 100,
-            height: 100,
+            width: 80,
+            height: 80,
             child: Visibility(
               visible: progress != 0.0,
               child: CircularProgressIndicator(
@@ -253,6 +255,22 @@ class _WalletScreenState extends State<WalletScreen> {
           ),
           const SizedBox(
             height: 20,
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => InformationScreen(
+                        address: spaddress,
+                        birthday: birthday,
+                        scanHeight: scanheight,
+                        tip: tipheight,
+                        updateBirthdayCallback: updateWalletBirthday,
+                      )));
+            },
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 50),
+            ),
+            child: const Text('See more information'),
           ),
         ],
       ),
