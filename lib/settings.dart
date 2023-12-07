@@ -22,22 +22,12 @@ class SettingsScreen extends StatelessWidget {
         ),
         ElevatedButton(
           onPressed: () async {
-            // await api.resetWallet();
-            await api.restartNakamoto();
-          },
-          style: ElevatedButton.styleFrom(
-            minimumSize: const Size(double.infinity, 50),
-          ),
-          child: const Text('Reset wallet to birthday'),
-        ),
-        ElevatedButton(
-          onPressed: () async {
             final navigator = Navigator.of(context);
             try {
               await SecureStorageService().resetWallet();
               await api.stopNakamoto();
             } catch (e) {
-              throw Exception("Failed to wipe wallet: ${e.toString()}");
+              throw Exception("Failed to wipe wallet");
             }
             navigator.pushReplacement(MaterialPageRoute(
                 builder: (context) => const IntroductionPage()));
