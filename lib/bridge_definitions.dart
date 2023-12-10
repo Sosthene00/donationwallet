@@ -71,6 +71,22 @@ abstract class Rust {
       {required String blob, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kGetSpendableOutputsConstMeta;
+
+  Future<String> signPsbtAt(
+      {required String blob,
+      required String psbt,
+      required int inputIndex,
+      dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kSignPsbtAtConstMeta;
+
+  Future<String> finalizePsbt({required String psbt, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kFinalizePsbtConstMeta;
+
+  Future<String> spendTo({required String spendingRequest, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kSpendToConstMeta;
 }
 
 class LogEntry {

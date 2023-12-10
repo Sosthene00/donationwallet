@@ -284,6 +284,67 @@ class RustImpl implements Rust {
         argNames: ["blob"],
       );
 
+  Future<String> signPsbtAt(
+      {required String blob,
+      required String psbt,
+      required int inputIndex,
+      dynamic hint}) {
+    var arg0 = _platform.api2wire_String(blob);
+    var arg1 = _platform.api2wire_String(psbt);
+    var arg2 = api2wire_u32(inputIndex);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) =>
+          _platform.inner.wire_sign_psbt_at(port_, arg0, arg1, arg2),
+      parseSuccessData: _wire2api_String,
+      parseErrorData: _wire2api_String,
+      constMeta: kSignPsbtAtConstMeta,
+      argValues: [blob, psbt, inputIndex],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kSignPsbtAtConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "sign_psbt_at",
+        argNames: ["blob", "psbt", "inputIndex"],
+      );
+
+  Future<String> finalizePsbt({required String psbt, dynamic hint}) {
+    var arg0 = _platform.api2wire_String(psbt);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner.wire_finalize_psbt(port_, arg0),
+      parseSuccessData: _wire2api_String,
+      parseErrorData: _wire2api_String,
+      constMeta: kFinalizePsbtConstMeta,
+      argValues: [psbt],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kFinalizePsbtConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "finalize_psbt",
+        argNames: ["psbt"],
+      );
+
+  Future<String> spendTo({required String spendingRequest, dynamic hint}) {
+    var arg0 = _platform.api2wire_String(spendingRequest);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner.wire_spend_to(port_, arg0),
+      parseSuccessData: _wire2api_String,
+      parseErrorData: _wire2api_String,
+      constMeta: kSpendToConstMeta,
+      argValues: [spendingRequest],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kSpendToConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "spend_to",
+        argNames: ["spendingRequest"],
+      );
+
   void dispose() {
     _platform.dispose();
   }
@@ -695,6 +756,62 @@ class RustWire implements FlutterRustBridgeWireBase {
           ffi.Void Function(ffi.Int64,
               ffi.Pointer<wire_uint_8_list>)>>('wire_get_spendable_outputs');
   late final _wire_get_spendable_outputs = _wire_get_spendable_outputsPtr
+      .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
+
+  void wire_sign_psbt_at(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> blob,
+    ffi.Pointer<wire_uint_8_list> psbt,
+    int input_index,
+  ) {
+    return _wire_sign_psbt_at(
+      port_,
+      blob,
+      psbt,
+      input_index,
+    );
+  }
+
+  late final _wire_sign_psbt_atPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int64, ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>, ffi.Uint32)>>('wire_sign_psbt_at');
+  late final _wire_sign_psbt_at = _wire_sign_psbt_atPtr.asFunction<
+      void Function(int, ffi.Pointer<wire_uint_8_list>,
+          ffi.Pointer<wire_uint_8_list>, int)>();
+
+  void wire_finalize_psbt(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> psbt,
+  ) {
+    return _wire_finalize_psbt(
+      port_,
+      psbt,
+    );
+  }
+
+  late final _wire_finalize_psbtPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(
+              ffi.Int64, ffi.Pointer<wire_uint_8_list>)>>('wire_finalize_psbt');
+  late final _wire_finalize_psbt = _wire_finalize_psbtPtr
+      .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
+
+  void wire_spend_to(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> spending_request,
+  ) {
+    return _wire_spend_to(
+      port_,
+      spending_request,
+    );
+  }
+
+  late final _wire_spend_toPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(
+              ffi.Int64, ffi.Pointer<wire_uint_8_list>)>>('wire_spend_to');
+  late final _wire_spend_to = _wire_spend_toPtr
       .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
 
   ffi.Pointer<wire_uint_8_list> new_uint_8_list_0(
