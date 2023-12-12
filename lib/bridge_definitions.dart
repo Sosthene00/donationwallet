@@ -72,6 +72,18 @@ abstract class Rust {
 
   FlutterRustBridgeTaskConstMeta get kGetSpendableOutputsConstMeta;
 
+  Future<int> transactionSize({required String psbt, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kTransactionSizeConstMeta;
+
+  Future<String> updateFees(
+      {required String psbt,
+      required int subtractFrom,
+      required int feeRate,
+      dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kUpdateFeesConstMeta;
+
   Future<String> signPsbtAt(
       {required String blob,
       required String psbt,
@@ -83,6 +95,15 @@ abstract class Rust {
   Future<String> finalizePsbt({required String psbt, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kFinalizePsbtConstMeta;
+
+  Future<String> markSpentFromTransaction(
+      {required String blob, required String txHex, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kMarkSpentFromTransactionConstMeta;
+
+  Future<String> broadcastRawTransaction({required String txHex, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kBroadcastRawTransactionConstMeta;
 
   Future<String> spendTo({required String spendingRequest, dynamic hint});
 

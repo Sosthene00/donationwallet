@@ -284,6 +284,49 @@ class RustImpl implements Rust {
         argNames: ["blob"],
       );
 
+  Future<int> transactionSize({required String psbt, dynamic hint}) {
+    var arg0 = _platform.api2wire_String(psbt);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner.wire_transaction_size(port_, arg0),
+      parseSuccessData: _wire2api_usize,
+      parseErrorData: _wire2api_String,
+      constMeta: kTransactionSizeConstMeta,
+      argValues: [psbt],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kTransactionSizeConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "transaction_size",
+        argNames: ["psbt"],
+      );
+
+  Future<String> updateFees(
+      {required String psbt,
+      required int subtractFrom,
+      required int feeRate,
+      dynamic hint}) {
+    var arg0 = _platform.api2wire_String(psbt);
+    var arg1 = api2wire_usize(subtractFrom);
+    var arg2 = _platform.api2wire_u64(feeRate);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) =>
+          _platform.inner.wire_update_fees(port_, arg0, arg1, arg2),
+      parseSuccessData: _wire2api_String,
+      parseErrorData: _wire2api_String,
+      constMeta: kUpdateFeesConstMeta,
+      argValues: [psbt, subtractFrom, feeRate],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kUpdateFeesConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "update_fees",
+        argNames: ["psbt", "subtractFrom", "feeRate"],
+      );
+
   Future<String> signPsbtAt(
       {required String blob,
       required String psbt,
@@ -325,6 +368,47 @@ class RustImpl implements Rust {
       const FlutterRustBridgeTaskConstMeta(
         debugName: "finalize_psbt",
         argNames: ["psbt"],
+      );
+
+  Future<String> markSpentFromTransaction(
+      {required String blob, required String txHex, dynamic hint}) {
+    var arg0 = _platform.api2wire_String(blob);
+    var arg1 = _platform.api2wire_String(txHex);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) =>
+          _platform.inner.wire_mark_spent_from_transaction(port_, arg0, arg1),
+      parseSuccessData: _wire2api_String,
+      parseErrorData: _wire2api_String,
+      constMeta: kMarkSpentFromTransactionConstMeta,
+      argValues: [blob, txHex],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kMarkSpentFromTransactionConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "mark_spent_from_transaction",
+        argNames: ["blob", "txHex"],
+      );
+
+  Future<String> broadcastRawTransaction(
+      {required String txHex, dynamic hint}) {
+    var arg0 = _platform.api2wire_String(txHex);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) =>
+          _platform.inner.wire_broadcast_raw_transaction(port_, arg0),
+      parseSuccessData: _wire2api_String,
+      parseErrorData: _wire2api_String,
+      constMeta: kBroadcastRawTransactionConstMeta,
+      argValues: [txHex],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kBroadcastRawTransactionConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "broadcast_raw_transaction",
+        argNames: ["txHex"],
       );
 
   Future<String> spendTo({required String spendingRequest, dynamic hint}) {
@@ -397,6 +481,10 @@ class RustImpl implements Rust {
   void _wire2api_unit(dynamic raw) {
     return;
   }
+
+  int _wire2api_usize(dynamic raw) {
+    return castInt(raw);
+  }
 }
 
 // Section: api2wire
@@ -411,6 +499,10 @@ int api2wire_u8(int raw) {
   return raw;
 }
 
+@protected
+int api2wire_usize(int raw) {
+  return raw;
+}
 // Section: finalizer
 
 class RustPlatform extends FlutterRustBridgeBase<RustWire> {
@@ -429,11 +521,17 @@ class RustPlatform extends FlutterRustBridgeBase<RustWire> {
   }
 
   @protected
+  int api2wire_u64(int raw) {
+    return raw;
+  }
+
+  @protected
   ffi.Pointer<wire_uint_8_list> api2wire_uint_8_list(Uint8List raw) {
     final ans = inner.new_uint_8_list_0(raw.length);
     ans.ref.ptr.asTypedList(raw.length).setAll(0, raw);
     return ans;
   }
+
 // Section: finalizer
 
 // Section: api_fill_to_wire
@@ -758,6 +856,44 @@ class RustWire implements FlutterRustBridgeWireBase {
   late final _wire_get_spendable_outputs = _wire_get_spendable_outputsPtr
       .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
 
+  void wire_transaction_size(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> psbt,
+  ) {
+    return _wire_transaction_size(
+      port_,
+      psbt,
+    );
+  }
+
+  late final _wire_transaction_sizePtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int64,
+              ffi.Pointer<wire_uint_8_list>)>>('wire_transaction_size');
+  late final _wire_transaction_size = _wire_transaction_sizePtr
+      .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
+
+  void wire_update_fees(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> psbt,
+    int subtract_from,
+    int fee_rate,
+  ) {
+    return _wire_update_fees(
+      port_,
+      psbt,
+      subtract_from,
+      fee_rate,
+    );
+  }
+
+  late final _wire_update_feesPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int64, ffi.Pointer<wire_uint_8_list>,
+              ffi.UintPtr, ffi.Uint64)>>('wire_update_fees');
+  late final _wire_update_fees = _wire_update_feesPtr.asFunction<
+      void Function(int, ffi.Pointer<wire_uint_8_list>, int, int)>();
+
   void wire_sign_psbt_at(
     int port_,
     ffi.Pointer<wire_uint_8_list> blob,
@@ -796,6 +932,46 @@ class RustWire implements FlutterRustBridgeWireBase {
               ffi.Int64, ffi.Pointer<wire_uint_8_list>)>>('wire_finalize_psbt');
   late final _wire_finalize_psbt = _wire_finalize_psbtPtr
       .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
+
+  void wire_mark_spent_from_transaction(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> blob,
+    ffi.Pointer<wire_uint_8_list> tx_hex,
+  ) {
+    return _wire_mark_spent_from_transaction(
+      port_,
+      blob,
+      tx_hex,
+    );
+  }
+
+  late final _wire_mark_spent_from_transactionPtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Void Function(ffi.Int64, ffi.Pointer<wire_uint_8_list>,
+                  ffi.Pointer<wire_uint_8_list>)>>(
+      'wire_mark_spent_from_transaction');
+  late final _wire_mark_spent_from_transaction =
+      _wire_mark_spent_from_transactionPtr.asFunction<
+          void Function(int, ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>)>();
+
+  void wire_broadcast_raw_transaction(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> tx_hex,
+  ) {
+    return _wire_broadcast_raw_transaction(
+      port_,
+      tx_hex,
+    );
+  }
+
+  late final _wire_broadcast_raw_transactionPtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Void Function(ffi.Int64, ffi.Pointer<wire_uint_8_list>)>>(
+      'wire_broadcast_raw_transaction');
+  late final _wire_broadcast_raw_transaction =
+      _wire_broadcast_raw_transactionPtr
+          .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
 
   void wire_spend_to(
     int port_,
@@ -857,3 +1033,5 @@ typedef DartPostCObjectFnType = ffi.Pointer<
     ffi.NativeFunction<
         ffi.Bool Function(DartPort port_id, ffi.Pointer<ffi.Void> message)>>;
 typedef DartPort = ffi.Int64;
+
+const int PSBT_SP_SUBTYPE = 0;
