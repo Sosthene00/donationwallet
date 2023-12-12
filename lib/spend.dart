@@ -172,9 +172,16 @@ class _SpendScreenState extends State<SpendScreen> {
                   throw Exception("Invalid fees");
                 }
                 List<String> addresses = List.filled(1, address);
+                try {
                 final tx =
                     await _spend(widget.spendingOutputs, addresses, fees);
-                print("$tx");
+                  print("Successfully crafted tx:\n$tx");
+                  final txid = await api.broadcastRawTransaction(txHex: tx);
+                  print("Sent tx $txid");
+                  await _updateWallet(tx);
+                } catch (e) {
+                  throw Exception("Failed to spend: $e");
+                }
               },
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
