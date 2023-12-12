@@ -25,19 +25,16 @@ class SpendDestination {
 
 class SpendingRequest {
   final List<Output> inputs;
-  final List<String> outputs;
-  final int fee;
+  final List<SpendDestination> outputs;
 
   SpendingRequest({
     required this.inputs,
     required this.outputs,
-    required this.fee,
   });
 
   Map<String, dynamic> toJson() => {
         'inputs': inputs,
         'outputs': outputs,
-        'fee': fee,
       };
 }
 
@@ -72,11 +69,12 @@ class _SpendScreenState extends State<SpendScreen> {
     final int inAmount =
         spentOutputs.fold(0, (sum, output) => sum + output.amount);
     // We only have one destination for now
-    final List<String> outputs = addresses.map((a) => "$a:$inAmount").toList();
+    final List<SpendDestination> outputs = addresses
+        .map((a) => SpendDestination(address: a, value: inAmount))
+        .toList();
     final request = SpendingRequest(
       inputs: spentOutputs,
       outputs: outputs,
-      fee: feeRate,
     ).toJson();
     final String spendingRequest = jsonEncode(request);
     String result;
