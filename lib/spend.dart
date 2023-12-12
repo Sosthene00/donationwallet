@@ -8,14 +8,19 @@ import 'package:donationwallet/wallet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class TxDestination {
+class SpendDestination {
   final String address;
-  int amount;
+  int value;
 
-  TxDestination({
+  SpendDestination({
     required this.address,
-    this.amount = 0,
+    this.value = 0,
   });
+
+  Map<String, dynamic> toJson() => {
+        'address': address,
+        'value': value,
+      };
 }
 
 class SpendingRequest {
