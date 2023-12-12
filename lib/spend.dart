@@ -64,6 +64,31 @@ class _SpendScreenState extends State<SpendScreen> {
     super.dispose();
   }
 
+  Future<void> _updateWallet(String tx) async {
+    SecureStorageService secureStorage = SecureStorageService();
+
+    final wallet = await secureStorage.read(key: label);
+    if (wallet == null) {
+      throw Exception("Can't find wallet");
+    }
+    final updatedWallet =
+        await api.markSpentFromTransaction(blob: wallet, txHex: tx);
+    try {
+      await secureStorage.write(key: label, value: updatedWallet);
+    } catch (e) {
+      throw Exception("$e");
+    }
+  }
+
+  Future<String> _updateFees(String psbt, int txSize, int feeRate) async {
+    try {
+      return await api.updateFees(
+          psbt: psbt, subtractFrom: 0, feeRate: feeRate);
+    } catch (e) {
+      throw Exception("$e");
+    }
+  }
+
   Future<String> _spend(
       List<Output> spentOutputs, List<String> addresses, int feeRate) async {
     final int inAmount =
