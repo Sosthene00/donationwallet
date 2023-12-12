@@ -29,12 +29,16 @@ class _RestoreScreenState extends State<RestoreScreen> {
       await secureStorage.resetWallet();
     }
 
+    try {
     final newWallet = await api.setup(
       label: await getPath(),
       network: "signet",
       seedWords: seedWords,
     );
     await secureStorage.write(key: label, value: newWallet);
+    } catch (e) {
+      throw Exception("$e");
+    }
   }
 
   @override
