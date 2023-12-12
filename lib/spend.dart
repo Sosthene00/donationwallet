@@ -102,10 +102,11 @@ class _SpendScreenState extends State<SpendScreen> {
       outputs: outputs,
     ).toJson();
     final String spendingRequest = jsonEncode(request);
-    String result;
+    String unsignedPsbt;
     try {
-      result = await api.spendTo(spendingRequest: spendingRequest);
-      // return result;
+      final noFeePsbt = await api.spendTo(spendingRequest: spendingRequest);
+      unsignedPsbt = await api.updateFees(
+          psbt: noFeePsbt, subtractFrom: 0, feeRate: feeRate);
     } catch (e) {
       throw Exception("Failed to spend: ${e.toString()}");
     }
@@ -115,7 +116,8 @@ class _SpendScreenState extends State<SpendScreen> {
     if (wallet == null) {
       throw Exception("Can't find wallet");
     }
-    final signed = await api.signPsbtAt(blob: wallet, psbt: result, inputIndex: 0);
+    final signed =
+        await api.signPsbtAt(blob: wallet, psbt: unsignedPsbt, inputIndex: 0);
     final finalized = await api.finalizePsbt(psbt: signed);
     return finalized;
   }
