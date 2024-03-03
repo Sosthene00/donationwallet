@@ -177,7 +177,7 @@ class WalletScreen extends StatelessWidget {
                   }
                 });
               },
-              child: Text('Send'),
+              child: const Text('Send'),
             ),
           ),
         ],

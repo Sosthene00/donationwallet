@@ -128,6 +128,8 @@ class SettingsScreen extends StatelessWidget {
               if (e != null) {
                 throw e;
               } else {
+                walletState.resetSync();
+
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (context) => const HomeScreen()),

@@ -78,6 +78,14 @@ class WalletState extends ChangeNotifier {
     }
   }
 
+  Future<void> resetSync() async {
+    try {
+      _synchronizationService.startSyncTimer();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<void> _initDir() async {
     try {
       dir = await getApplicationSupportDirectory();
