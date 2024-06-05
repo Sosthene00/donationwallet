@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:donationwallet/rust/api/simple.dart';
-import 'package:donationwallet/rust/constants.dart';
 import 'package:donationwallet/home.dart';
 import 'package:donationwallet/main.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +14,7 @@ class LoadWalletScreen extends StatelessWidget {
       BuildContext context, WalletType walletType, int birthday) async {
     final walletState = Provider.of<WalletState>(context, listen: false);
     // Check that there's no wallet on disk under the same label
-    if (await walletExists(
+    if (walletExists(
         label: walletState.label, filesDir: walletState.dir.path)) {
       // Just use the existing wallet and notify the user
       // As we already checked when loading the main screen, this shouldn't happen
@@ -136,7 +135,7 @@ class LoadWalletScreen extends StatelessWidget {
                 final spendKey = spendKeyController.text;
                 final birthday = int.parse(birthdayController.text);
                 final walletType = watchOnly
-                    ? WalletType.readOnly(scanKey, spendKey)
+                    ? WalletType.watchOnly(scanKey, spendKey)
                     : WalletType.privateKeys(scanKey, spendKey);
 
                 try {

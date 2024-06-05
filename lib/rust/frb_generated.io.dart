@@ -4,7 +4,6 @@
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
 import 'api/simple.dart';
-import 'constants.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi' as ffi;
@@ -25,6 +24,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AnyhowException dco_decode_AnyhowException(dynamic raw);
 
   @protected
+  Map<String, OwnedOutput> dco_decode_Map_String_owned_output(dynamic raw);
+
+  @protected
   RustStreamSink<LogEntry> dco_decode_StreamSink_log_entry_Sse(dynamic raw);
 
   @protected
@@ -41,6 +43,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String dco_decode_String(dynamic raw);
 
   @protected
+  Amount dco_decode_amount(dynamic raw);
+
+  @protected
   bool dco_decode_bool(dynamic raw);
 
   @protected
@@ -53,13 +58,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64 dco_decode_i_64(dynamic raw);
 
   @protected
-  List<OwnedOutput> dco_decode_list_owned_output(dynamic raw);
-
-  @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
   List<Recipient> dco_decode_list_recipient(dynamic raw);
+
+  @protected
+  List<(String, OwnedOutput)> dco_decode_list_record_string_owned_output(
+      dynamic raw);
 
   @protected
   LogEntry dco_decode_log_entry(dynamic raw);
@@ -78,6 +84,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Recipient dco_decode_recipient(dynamic raw);
+
+  @protected
+  (String, OwnedOutput) dco_decode_record_string_owned_output(dynamic raw);
 
   @protected
   ScanProgress dco_decode_scan_progress(dynamic raw);
@@ -107,6 +116,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
 
   @protected
+  Map<String, OwnedOutput> sse_decode_Map_String_owned_output(
+      SseDeserializer deserializer);
+
+  @protected
   RustStreamSink<LogEntry> sse_decode_StreamSink_log_entry_Sse(
       SseDeserializer deserializer);
 
@@ -126,6 +139,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
+  Amount sse_decode_amount(SseDeserializer deserializer);
+
+  @protected
   bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
@@ -138,13 +154,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
 
   @protected
-  List<OwnedOutput> sse_decode_list_owned_output(SseDeserializer deserializer);
-
-  @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
 
   @protected
   List<Recipient> sse_decode_list_recipient(SseDeserializer deserializer);
+
+  @protected
+  List<(String, OwnedOutput)> sse_decode_list_record_string_owned_output(
+      SseDeserializer deserializer);
 
   @protected
   LogEntry sse_decode_log_entry(SseDeserializer deserializer);
@@ -164,6 +181,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Recipient sse_decode_recipient(SseDeserializer deserializer);
+
+  @protected
+  (String, OwnedOutput) sse_decode_record_string_owned_output(
+      SseDeserializer deserializer);
 
   @protected
   ScanProgress sse_decode_scan_progress(SseDeserializer deserializer);
@@ -194,6 +215,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       AnyhowException self, SseSerializer serializer);
 
   @protected
+  void sse_encode_Map_String_owned_output(
+      Map<String, OwnedOutput> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_StreamSink_log_entry_Sse(
       RustStreamSink<LogEntry> self, SseSerializer serializer);
 
@@ -213,6 +238,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
+  void sse_encode_amount(Amount self, SseSerializer serializer);
+
+  @protected
   void sse_encode_bool(bool self, SseSerializer serializer);
 
   @protected
@@ -226,16 +254,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
 
   @protected
-  void sse_encode_list_owned_output(
-      List<OwnedOutput> self, SseSerializer serializer);
-
-  @protected
   void sse_encode_list_prim_u_8_strict(
       Uint8List self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_recipient(
       List<Recipient> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_record_string_owned_output(
+      List<(String, OwnedOutput)> self, SseSerializer serializer);
 
   @protected
   void sse_encode_log_entry(LogEntry self, SseSerializer serializer);
@@ -255,6 +283,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_recipient(Recipient self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_record_string_owned_output(
+      (String, OwnedOutput) self, SseSerializer serializer);
 
   @protected
   void sse_encode_scan_progress(ScanProgress self, SseSerializer serializer);
