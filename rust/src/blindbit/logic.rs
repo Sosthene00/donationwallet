@@ -15,27 +15,20 @@ use sp_client::{
     spclient::{OutputList, SpWallet},
 };
 
+use crate::blindbit::client::{BlindbitClient, UtxoResponse};
 use crate::stream::{send_amount_update, send_scan_progress, ScanProgress};
-use crate::{
-    blindbit::client::{BlindbitClient, UtxoResponse},
-    stream::{send_sync_progress, SyncStatus},
-};
 
 use super::client::FilterResponse;
 
 const HOST: &str = "https://silentpayments.dev/blindbit/signet";
 const CONCURRENT_FILTER_REQUESTS: usize = 200;
 
-pub async fn sync_blockchain() -> Result<()> {
+pub async fn sync_blockchain() -> Result<u32> {
     let blindbit_client = BlindbitClient::new(HOST.to_string());
 
     let height = blindbit_client.block_height().await?;
 
-    send_sync_progress(SyncStatus {
-        blockheight: height,
-    });
-
-    Ok(())
+    Ok(height)
 }
 
 pub async fn scan_blocks(mut n_blocks_to_scan: u32, sp_wallet: &mut SpWallet) -> Result<()> {
@@ -91,12 +84,6 @@ pub async fn scan_blocks(mut n_blocks_to_scan: u32, sp_wallet: &mut SpWallet) ->
         )
         .await?;
 
-        send_scan_progress(ScanProgress {
-            start,
-            current: blkheight,
-            end,
-        });
-
         if !found_outputs.is_empty() {
             sp_wallet.get_mut_outputs().extend_from(found_outputs);
 
@@ -108,6 +95,13 @@ pub async fn scan_blocks(mut n_blocks_to_scan: u32, sp_wallet: &mut SpWallet) ->
                 sp_wallet.get_mut_outputs().mark_mined(outpoint, blkhash)?;
             }
         }
+
+        send_scan_progress(ScanProgress {
+            start,
+            current: blkheight,
+            end,
+            balance: sp_wallet.get_outputs().get_balance().to_sat(),
+        });
     }
 
     // time elapsed for the scan

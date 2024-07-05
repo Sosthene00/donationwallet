@@ -10,15 +10,18 @@ class ScanProgress {
   final int start;
   final int current;
   final int end;
+  final BigInt balance;
 
   const ScanProgress({
     required this.start,
     required this.current,
     required this.end,
+    required this.balance,
   });
 
   @override
-  int get hashCode => start.hashCode ^ current.hashCode ^ end.hashCode;
+  int get hashCode =>
+      start.hashCode ^ current.hashCode ^ end.hashCode ^ balance.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -27,23 +30,6 @@ class ScanProgress {
           runtimeType == other.runtimeType &&
           start == other.start &&
           current == other.current &&
-          end == other.end;
-}
-
-class SyncStatus {
-  final int blockheight;
-
-  const SyncStatus({
-    required this.blockheight,
-  });
-
-  @override
-  int get hashCode => blockheight.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is SyncStatus &&
-          runtimeType == other.runtimeType &&
-          blockheight == other.blockheight;
+          end == other.end &&
+          balance == other.balance;
 }
