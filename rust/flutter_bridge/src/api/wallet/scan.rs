@@ -1,6 +1,8 @@
-use crate::{api::outputs::OwnedOutPoints, state::StateUpdater, wallet::KEEP_SCANNING};
-use anyhow::Result;
-use sp_client::{bitcoin::absolute::Height, BlindbitBackend, ChainBackend, SpScanner};
+use dana_core::outputs::OwnedOutPoints;
+use dana_core::state::updater::StateUpdater;
+use dana_core::anyhow::Result;
+use dana_core::sp_client::{bitcoin::absolute::Height, BlindbitBackend, ChainBackend, SpScanner};
+use dana_core::wallet::KEEP_SCANNING;
 
 use super::SpWallet;
 
@@ -22,7 +24,7 @@ impl SpWallet {
     ) -> Result<()> {
         let backend = BlindbitBackend::new(blindbit_url)?;
 
-        let dust_limit = sp_client::bitcoin::Amount::from_sat(dust_limit);
+        let dust_limit = dana_core::sp_client::bitcoin::Amount::from_sat(dust_limit);
 
         let start = Height::from_consensus(last_scan + 1)?;
         let end = backend.block_height().await?;

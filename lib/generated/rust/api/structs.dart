@@ -9,6 +9,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'structs.freezed.dart';
 
+// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `ApiRecordedTransaction`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `try_from`
 
 class ApiAmount {
@@ -117,18 +118,6 @@ class ApiRecipient {
           runtimeType == other.runtimeType &&
           address == other.address &&
           amount == other.amount;
-}
-
-@freezed
-sealed class ApiRecordedTransaction with _$ApiRecordedTransaction {
-  const ApiRecordedTransaction._();
-
-  const factory ApiRecordedTransaction.incoming(
-    ApiRecordedTransactionIncoming field0,
-  ) = ApiRecordedTransaction_Incoming;
-  const factory ApiRecordedTransaction.outgoing(
-    ApiRecordedTransactionOutgoing field0,
-  ) = ApiRecordedTransaction_Outgoing;
 }
 
 class ApiRecordedTransactionIncoming {

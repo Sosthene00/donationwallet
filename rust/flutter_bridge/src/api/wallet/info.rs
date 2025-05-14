@@ -1,6 +1,6 @@
 use flutter_rust_bridge::frb;
 
-use crate::api::{history::TxHistory, outputs::OwnedOutputs};
+use dana_core::{history::TxHistory, outputs::OwnedOutputs};
 
 use super::SpWallet;
 

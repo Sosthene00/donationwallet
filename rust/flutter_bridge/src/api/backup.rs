@@ -8,13 +8,9 @@ use flutter_rust_bridge::frb;
 use rand::{rngs::OsRng, TryRngCore};
 use serde::{Deserialize, Serialize};
 
-use super::{
-    history::TxHistory,
-    outputs::OwnedOutputs,
-    wallet::{ApiScanKey, ApiSpendKey, SpWallet},
-};
+use super::wallet::{ApiScanKey, ApiSpendKey, SpWallet};
 
-use anyhow::Result;
+use dana_core::{anyhow::Result, history::TxHistory, outputs::OwnedOutputs};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EncryptedDanaBackup {

@@ -18,3 +18,6 @@ Stream<ScanProgress> createScanProgressStream() =>
 
 Stream<StateUpdate> createScanResultStream() =>
     RustLib.instance.api.crateApiStreamCreateScanResultStream();
+
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<StateUpdate>>
+abstract class StateUpdate implements RustOpaqueInterface {}

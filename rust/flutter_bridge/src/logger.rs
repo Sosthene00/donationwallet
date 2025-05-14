@@ -4,10 +4,10 @@ use std::{
 };
 
 use crate::frb_generated::StreamSink;
-use log::{warn, LevelFilter, Log, Metadata, Record};
+use dana_core::log::{warn, LevelFilter, Log, Metadata, Record};
 
-use lazy_static::lazy_static;
-use simplelog::{CombinedLogger, Config, SharedLogger};
+use dana_core::lazy_static::lazy_static;
+use dana_core::simplelog::{CombinedLogger, Config, SharedLogger};
 
 lazy_static! {
     static ref FLUTTER_LOGGER_STREAM_SINK: RwLock<Option<StreamSink<LogEntry>>> = RwLock::new(None);

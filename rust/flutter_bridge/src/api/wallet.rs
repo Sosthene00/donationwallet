@@ -1,18 +1,18 @@
 mod info;
-mod scan;
+pub mod scan;
 pub mod setup;
 mod transaction;
 
-use crate::wallet::WalletFingerprint;
-use anyhow::Result;
+use dana_core::wallet::WalletFingerprint;
+use dana_core::anyhow::Result;
 use flutter_rust_bridge::frb;
 use serde::{Deserialize, Serialize};
-use sp_client::{
+use dana_core::sp_client::{
     bitcoin::{absolute::Height, secp256k1::SecretKey, Network},
     SpClient, SpendKey,
 };
 
-use super::{history::TxHistory, outputs::OwnedOutputs};
+use dana_core::{history::TxHistory, outputs::OwnedOutputs};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[frb(opaque)]

@@ -8,11 +8,10 @@
 
 import 'api/backup.dart';
 import 'api/chain.dart';
-import 'api/history.dart';
-import 'api/outputs.dart';
 import 'api/stream.dart';
 import 'api/structs.dart';
 import 'api/wallet.dart';
+import 'api/wallet/scan.dart';
 import 'api/wallet/setup.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -125,16 +124,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
           dynamic raw);
 
   @protected
-  OwnedOutputs
-      dco_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerOwnedOutputs(
-          dynamic raw);
-
-  @protected
-  TxHistory
-      dco_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerTxHistory(
-          dynamic raw);
-
-  @protected
   WalletBackup
       dco_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWalletBackup(
           dynamic raw);
@@ -160,23 +149,8 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
           dynamic raw);
 
   @protected
-  OwnedOutputs
-      dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerOwnedOutputs(
-          dynamic raw);
-
-  @protected
   SpWallet
       dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSpWallet(
-          dynamic raw);
-
-  @protected
-  StateUpdate
-      dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStateUpdate(
-          dynamic raw);
-
-  @protected
-  TxHistory
-      dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerTxHistory(
           dynamic raw);
 
   @protected
@@ -271,9 +245,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ApiRecipient dco_decode_api_recipient(dynamic raw);
 
   @protected
-  ApiRecordedTransaction dco_decode_api_recorded_transaction(dynamic raw);
-
-  @protected
   ApiRecordedTransactionIncoming dco_decode_api_recorded_transaction_incoming(
       dynamic raw);
 
@@ -343,10 +314,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<ApiRecipient> dco_decode_list_api_recipient(dynamic raw);
-
-  @protected
-  List<ApiRecordedTransaction> dco_decode_list_api_recorded_transaction(
-      dynamic raw);
 
   @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
@@ -470,16 +437,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
           SseDeserializer deserializer);
 
   @protected
-  OwnedOutputs
-      sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerOwnedOutputs(
-          SseDeserializer deserializer);
-
-  @protected
-  TxHistory
-      sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerTxHistory(
-          SseDeserializer deserializer);
-
-  @protected
   WalletBackup
       sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWalletBackup(
           SseDeserializer deserializer);
@@ -505,23 +462,8 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
           SseDeserializer deserializer);
 
   @protected
-  OwnedOutputs
-      sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerOwnedOutputs(
-          SseDeserializer deserializer);
-
-  @protected
   SpWallet
       sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSpWallet(
-          SseDeserializer deserializer);
-
-  @protected
-  StateUpdate
-      sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStateUpdate(
-          SseDeserializer deserializer);
-
-  @protected
-  TxHistory
-      sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerTxHistory(
           SseDeserializer deserializer);
 
   @protected
@@ -618,10 +560,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ApiRecipient sse_decode_api_recipient(SseDeserializer deserializer);
 
   @protected
-  ApiRecordedTransaction sse_decode_api_recorded_transaction(
-      SseDeserializer deserializer);
-
-  @protected
   ApiRecordedTransactionIncoming sse_decode_api_recorded_transaction_incoming(
       SseDeserializer deserializer);
 
@@ -698,10 +636,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<ApiRecipient> sse_decode_list_api_recipient(
-      SseDeserializer deserializer);
-
-  @protected
-  List<ApiRecordedTransaction> sse_decode_list_api_recorded_transaction(
       SseDeserializer deserializer);
 
   @protected
@@ -828,16 +762,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void
-      sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerOwnedOutputs(
-          OwnedOutputs self, SseSerializer serializer);
-
-  @protected
-  void
-      sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerTxHistory(
-          TxHistory self, SseSerializer serializer);
-
-  @protected
-  void
       sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWalletBackup(
           WalletBackup self, SseSerializer serializer);
 
@@ -863,23 +787,8 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void
-      sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerOwnedOutputs(
-          OwnedOutputs self, SseSerializer serializer);
-
-  @protected
-  void
       sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSpWallet(
           SpWallet self, SseSerializer serializer);
-
-  @protected
-  void
-      sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerStateUpdate(
-          StateUpdate self, SseSerializer serializer);
-
-  @protected
-  void
-      sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerTxHistory(
-          TxHistory self, SseSerializer serializer);
 
   @protected
   void
@@ -976,10 +885,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_api_recipient(ApiRecipient self, SseSerializer serializer);
 
   @protected
-  void sse_encode_api_recorded_transaction(
-      ApiRecordedTransaction self, SseSerializer serializer);
-
-  @protected
   void sse_encode_api_recorded_transaction_incoming(
       ApiRecordedTransactionIncoming self, SseSerializer serializer);
 
@@ -1054,10 +959,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_api_recipient(
       List<ApiRecipient> self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_list_api_recorded_transaction(
-      List<ApiRecordedTransaction> self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_prim_u_8_strict(

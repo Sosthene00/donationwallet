@@ -7,6 +7,12 @@ import 'frb_generated.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<OwnedOutputs>>
+abstract class OwnedOutputs implements RustOpaqueInterface {}
+
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<TxHistory>>
+abstract class TxHistory implements RustOpaqueInterface {}
+
 class U8Array32 extends NonGrowableListView<int> {
   static const arraySize = 32;
 

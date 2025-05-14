@@ -4,8 +4,6 @@
 
 pub mod backup;
 pub mod chain;
-pub mod history;
-pub mod outputs;
 pub mod simple;
 pub mod stream;
 pub mod structs;

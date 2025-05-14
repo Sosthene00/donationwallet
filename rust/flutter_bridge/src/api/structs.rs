@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use flutter_rust_bridge::frb;
 use serde::{Deserialize, Serialize};
-use sp_client::{
+use dana_core::sp_client::{
     bitcoin::{
         self,
         absolute::Height,
@@ -14,7 +14,7 @@ use sp_client::{
     OutputSpendStatus, OwnedOutput, Recipient, SilentPaymentUnsignedTransaction,
 };
 
-use crate::state::constants::{
+use dana_core::state::constants::{
     RecordedTransaction, RecordedTransactionIncoming, RecordedTransactionOutgoing,
 };
 
@@ -140,7 +140,7 @@ impl From<Recipient> for ApiRecipient {
 }
 
 impl TryFrom<ApiRecipient> for Recipient {
-    type Error = anyhow::Error;
+    type Error = dana_core::anyhow::Error;
     fn try_from(value: ApiRecipient) -> Result<Self, Self::Error> {
         let address = value.address.try_into()?;
         let res = Recipient {

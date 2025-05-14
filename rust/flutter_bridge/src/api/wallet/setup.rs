@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use sp_client::{
+use dana_core::sp_client::{
     bitcoin::{
         secp256k1::{PublicKey, SecretKey},
         Network,
@@ -8,10 +8,10 @@ use sp_client::{
     SpendKey,
 };
 
-use crate::wallet::derive_keys_from_seed;
+use dana_core::wallet::derive_keys_from_seed;
 
 use super::{ApiScanKey, ApiSpendKey, SpWallet};
-use anyhow::Result;
+use dana_core::anyhow::Result;
 
 /// we don't add a passphrase to the bip39 mnemonic
 const PASSPHRASE: &str = "";
@@ -47,7 +47,7 @@ impl SpWallet {
         match setup_type {
             WalletSetupType::NewWallet => {
                 // We create a new wallet and return the new mnemonic
-                let m = bip39::Mnemonic::generate(12)?;
+                let m = dana_core::bip39::Mnemonic::generate(12)?;
                 let seed = m.to_seed(PASSPHRASE);
                 let (scan_sk, spend_sk) = derive_keys_from_seed(&seed, network)?;
 
@@ -62,7 +62,7 @@ impl SpWallet {
             }
             WalletSetupType::Mnemonic(mnemonic) => {
                 // We restore from seed
-                let m = bip39::Mnemonic::from_str(&mnemonic)?;
+                let m = dana_core::bip39::Mnemonic::from_str(&mnemonic)?;
                 let seed = m.to_seed(PASSPHRASE);
                 let (scan_sk, spend_sk) = derive_keys_from_seed(&seed, network)?;
 

@@ -3,7 +3,6 @@ use std::{
     str::FromStr,
 };
 
-use flutter_rust_bridge::frb;
 use serde::{Deserialize, Serialize};
 use sp_client::{
     bitcoin::{absolute::Height, BlockHash, OutPoint, Txid},
@@ -12,40 +11,32 @@ use sp_client::{
 
 use anyhow::{Error, Result};
 
-use crate::stream::StateUpdate;
+use crate::state::updater::StateUpdate;
 
-use super::structs::ApiOwnedOutput;
-
-#[frb(opaque)]
 pub struct OwnedOutPoints(HashSet<OutPoint>);
 
 impl OwnedOutPoints {
-    pub(crate) fn to_inner(self) -> HashSet<OutPoint> {
+    pub fn to_inner(self) -> HashSet<OutPoint> {
         self.0
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[frb(opaque)]
 pub struct OwnedOutputs(HashMap<OutPoint, OwnedOutput>);
 
 impl OwnedOutputs {
-    #[flutter_rust_bridge::frb(sync)]
     pub fn empty() -> Self {
         Self(HashMap::new())
     }
 
-    #[flutter_rust_bridge::frb(sync)]
     pub fn decode(encoded_outputs: String) -> Self {
         serde_json::from_str(&encoded_outputs).unwrap()
     }
 
-    #[flutter_rust_bridge::frb(sync)]
     pub fn encode(&self) -> String {
         serde_json::to_string(&self).unwrap()
     }
 
-    #[flutter_rust_bridge::frb(sync)]
     pub fn process_state_update(&mut self, update: &StateUpdate) -> Result<()> {
         match update {
             StateUpdate::Update {
@@ -69,7 +60,6 @@ impl OwnedOutputs {
         Ok(())
     }
 
-    #[flutter_rust_bridge::frb(sync)]
     pub fn mark_outpoints_spent(&mut self, spent_by: String, spent: Vec<String>) -> Result<()> {
         for outpoint in spent {
             self.mark_spent(
@@ -82,7 +72,6 @@ impl OwnedOutputs {
         Ok(())
     }
 
-    #[flutter_rust_bridge::frb(sync)]
     pub fn reset_to_height(&mut self, height: u32) -> Result<()> {
         let blkheight = Height::from_consensus(height)?;
         // reset known outputs to height
@@ -91,7 +80,6 @@ impl OwnedOutputs {
         Ok(())
     }
 
-    #[flutter_rust_bridge::frb(sync)]
     pub fn get_unspent_amount(&self) -> u64 {
         self.0
             .values()
@@ -99,8 +87,7 @@ impl OwnedOutputs {
             .fold(0, |acc, x| acc + x.amount.to_sat())
     }
 
-    #[flutter_rust_bridge::frb(sync)]
-    pub fn get_unspent_outputs(&self) -> HashMap<String, ApiOwnedOutput> {
+    pub fn get_unspent_outputs(&self) -> HashMap<String, OwnedOutput> {
         let mut res = HashMap::new();
         for (outpoint, output) in self.0.iter() {
             if output.spend_status == OutputSpendStatus::Unspent {
@@ -111,7 +98,6 @@ impl OwnedOutputs {
         res
     }
 
-    #[flutter_rust_bridge::frb(sync)]
     pub fn get_unconfirmed_spent_outpoints(&self) -> OwnedOutPoints {
         let mut res = HashSet::new();
         for (outpoint, output) in self.0.iter() {

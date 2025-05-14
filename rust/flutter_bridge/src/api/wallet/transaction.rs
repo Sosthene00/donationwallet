@@ -3,13 +3,15 @@ use std::{collections::HashMap, str::FromStr};
 use crate::api::structs::ApiOwnedOutput;
 use crate::api::structs::ApiRecipient;
 use crate::api::structs::ApiSilentPaymentUnsignedTransaction;
-use anyhow::Result;
-use bip39::rand::{thread_rng, RngCore};
-use sp_client::BlindbitClient;
-use sp_client::{
+use dana_core::anyhow::{Error, Result};
+use dana_core::bip39::rand::{thread_rng, RngCore};
+use dana_core::sp_client::BlindbitClient;
+use dana_core::sp_client::FeeRate;
+use dana_core::sp_client::{
     bitcoin::{consensus::serialize, hex::DisplayHex, Network, OutPoint},
     OwnedOutput, Recipient, RecipientAddress, SpClient,
 };
+use dana_core::log;
 
 use super::SpWallet;
 
@@ -35,8 +37,11 @@ impl SpWallet {
             .map(|r| r.try_into().unwrap())
             .collect();
         let core_network = Network::from_core_arg(&network)?;
+        if !feerate.is_normal() {
+            return Err(Error::msg("feerate is not normal"));
+        }
         let res =
-            client.create_new_transaction(available_utxos?, recipients, feerate, core_network)?;
+            client.create_new_transaction(available_utxos?, recipients, FeeRate::from_btc_per_kvb(feerate), core_network)?;
 
         Ok(res.into())
     }
@@ -132,10 +137,10 @@ impl SpWallet {
                         log::info!("broadcasted {} transactions", report.success.len());
                         break;
                     } else {
-                         return Err(anyhow::Error::msg("Failed to broadcast transaction, probably unable to connect to Tor peers"));
+                         return Err(Error::msg("Failed to broadcast transaction, probably unable to connect to Tor peers"));
                     }
                 }
-                pushtx::Info::Done(Err(err)) => return Err(anyhow::Error::msg(err.to_string())),
+                pushtx::Info::Done(Err(err)) => return Err(Error::msg(err.to_string())),
                 _ => {}
             }
         }

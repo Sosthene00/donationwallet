@@ -1,48 +1,38 @@
 use std::{collections::HashMap, str::FromStr};
 
-use flutter_rust_bridge::frb;
 use serde::{Deserialize, Serialize};
 use sp_client::{
     bitcoin::{absolute::Height, Amount, OutPoint, Txid},
     Recipient,
 };
 
-use crate::{
-    state::constants::{
+use crate::state::constants::{
         RecordedTransaction, RecordedTransactionIncoming, RecordedTransactionOutgoing,
-    },
-    stream::StateUpdate,
-};
+    };
+use crate::state::updater::StateUpdate;
 
-use super::structs::{ApiAmount, ApiRecipient, ApiRecordedTransaction};
 use anyhow::{Error, Result};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
-#[frb(opaque)]
 pub struct TxHistory(Vec<RecordedTransaction>);
 
 impl TxHistory {
-    #[flutter_rust_bridge::frb(sync)]
     pub fn empty() -> Self {
         Self(vec![])
     }
 
-    #[flutter_rust_bridge::frb(sync)]
     pub fn decode(encoded_history: String) -> Self {
         serde_json::from_str(&encoded_history).unwrap()
     }
 
-    #[flutter_rust_bridge::frb(sync)]
     pub fn encode(&self) -> String {
         serde_json::to_string(&self).unwrap()
     }
 
-    #[flutter_rust_bridge::frb(sync)]
-    pub fn to_api_transactions(&self) -> Vec<ApiRecordedTransaction> {
+    pub fn to_api_transactions(&self) -> Vec<RecordedTransaction> {
         self.0.iter().map(|x| x.clone().into()).collect()
     }
 
-    #[flutter_rust_bridge::frb(sync)]
     pub fn process_state_update(&mut self, update: &StateUpdate) -> Result<()> {
         match update {
             StateUpdate::Update {
@@ -90,14 +80,13 @@ impl TxHistory {
         Ok(())
     }
 
-    #[flutter_rust_bridge::frb(sync)]
     pub fn add_outgoing_tx_to_history(
         &mut self,
         txid: String,
         spent_outpoints: Vec<String>,
-        recipients: Vec<ApiRecipient>,
-        change: ApiAmount,
-        fee: ApiAmount,
+        recipients: Vec<Recipient>,
+        change: Amount,
+        fee: Amount,
     ) -> Result<()> {
         let txid = Txid::from_str(&txid)?;
         let spent_outpoints = spent_outpoints
@@ -121,7 +110,6 @@ impl TxHistory {
         Ok(())
     }
 
-    #[flutter_rust_bridge::frb(sync)]
     pub fn reset_to_height(&mut self, height: u32) -> Result<()> {
         let blkheight = Height::from_consensus(height)?;
         self.0.retain(|tx| match tx {
@@ -136,7 +124,6 @@ impl TxHistory {
         Ok(())
     }
 
-    #[flutter_rust_bridge::frb(sync)]
     pub fn get_unconfirmed_change(&self) -> u64 {
         self.0
             .iter()
