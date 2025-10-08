@@ -1907,7 +1907,7 @@ dependencies = [
 [[package]]
 name = "sp_client"
 version = "0.1.0"
-source = "git+https://github.com/cygnet3/sp-client?branch=master#21a23c9c28f19fa46841c0fe610aa6bdfd523bac"
+source = "git+https://github.com/cygnet3/sp-client?rev=b4c68c777ac8b6d66d80c9d6ceeee8024a6ca7bb#b4c68c777ac8b6d66d80c9d6ceeee8024a6ca7bb"
 dependencies = [
  "anyhow",
  "async-trait",
