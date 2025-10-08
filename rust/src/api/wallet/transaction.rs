@@ -6,6 +6,7 @@ use crate::api::structs::ApiSilentPaymentUnsignedTransaction;
 use anyhow::Result;
 use bip39::rand::{thread_rng, RngCore};
 use sp_client::BlindbitClient;
+use sp_client::FeeRate;
 use sp_client::{
     bitcoin::{consensus::serialize, hex::DisplayHex, Network, OutPoint},
     OwnedOutput, Recipient, RecipientAddress, SpClient,
@@ -35,8 +36,12 @@ impl SpWallet {
             .map(|r| r.try_into().unwrap())
             .collect();
         let core_network = Network::from_core_arg(&network)?;
-        let res =
-            client.create_new_transaction(available_utxos?, recipients, feerate, core_network)?;
+        let res = client.create_new_transaction(
+            available_utxos?,
+            recipients,
+            FeeRate::from_btc_per_kvb(feerate),
+            core_network,
+        )?;
 
         Ok(res.into())
     }
@@ -123,25 +128,32 @@ impl SpWallet {
         };
 
         tokio::task::spawn_blocking(move || {
-        let receiver = pushtx::broadcast(vec![tx], opts);
+            let receiver = pushtx::broadcast(vec![tx], opts);
 
-        loop {
-            match receiver.recv().unwrap() {
-                pushtx::Info::Done(Ok(report)) => {
-                    if report.success.len() > 0 {
-                        log::info!("broadcasted {} transactions", report.success.len());
-                        break;
-                    } else {
-                         return Err(anyhow::Error::msg("Failed to broadcast transaction, probably unable to connect to Tor peers"));
+            loop {
+                match receiver.recv() {
+                    Ok(pushtx::Info::Done(Ok(report))) => {
+                        if report.success.len() > 0 {
+                            log::info!("broadcasted {} transactions", report.success.len());
+                            break;
+                        } else {
+                            return Err(anyhow::Error::msg("Failed to broadcast transaction, probably unable to connect to Tor peers"));
+                        }
+                    }
+                    Ok(pushtx::Info::Done(Err(err))) => return Err(anyhow::Error::msg(err.to_string())),
+                    Ok(_) => {} // Continue for other Info variants
+                    Err(recv_err) => {
+                        log::error!("Channel recv error: {:?}", recv_err);
+                        return Err(anyhow::Error::msg(format!(
+                            "Channel closed unexpectedly while waiting for broadcast result: {:?}", 
+                            recv_err
+                        )));
                     }
                 }
-                pushtx::Info::Done(Err(err)) => return Err(anyhow::Error::msg(err.to_string())),
-                _ => {}
             }
-        }
-        Ok(())
-    })
-    .await??;
+            Ok(())
+        })
+        .await??;
 
         Ok(txid.to_string())
     }
