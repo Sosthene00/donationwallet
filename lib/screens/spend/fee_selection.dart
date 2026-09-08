@@ -1,5 +1,4 @@
 import 'package:bitcoin_ui/bitcoin_ui.dart';
-import 'package:danawallet/constants.dart';
 import 'package:danawallet/data/enums/amount_display_unit.dart';
 import 'package:danawallet/data/models/bip353_address.dart';
 import 'package:danawallet/data/models/recommended_fee_model.dart';
@@ -100,8 +99,11 @@ class FeeSelectionScreenState extends State<FeeSelectionScreen> {
     }
   }
 
-  ListTile toListTile(SelectedFee fee, FiatExchangeRateState exchangeRate,
-      AmountDisplayUnit bitcoinUnit) {
+  ListTile toListTile(
+      SelectedFee fee,
+      FiatExchangeRateState exchangeRate,
+      AmountDisplayUnit bitcoinUnit,
+      DisplayPreferencesState displayPreference) {
     switch (fee) {
       case SelectedFee.fast:
       case SelectedFee.normal:
@@ -117,7 +119,8 @@ class FeeSelectionScreenState extends State<FeeSelectionScreen> {
             throw Exception('Fee amount not computed for $fee');
           }
           subtitleBtc = estimatedFee.display(bitcoinUnit);
-          subtitleFiat = exchangeRate.displayFiat(estimatedFee);
+          subtitleFiat = exchangeRate.displayFiat(
+              estimatedFee, displayPreference.fiatCurrency);
         }
 
         return ListTile(
@@ -194,14 +197,18 @@ class FeeSelectionScreenState extends State<FeeSelectionScreen> {
           },
           child: Column(children: [
             const Divider(),
-            toListTile(SelectedFee.fast, exchangeRate, bitcoinUnit),
+            toListTile(
+                SelectedFee.fast, exchangeRate, bitcoinUnit, displayPreference),
             const Divider(),
-            toListTile(SelectedFee.normal, exchangeRate, bitcoinUnit),
+            toListTile(SelectedFee.normal, exchangeRate, bitcoinUnit,
+                displayPreference),
             const Divider(),
-            toListTile(SelectedFee.slow, exchangeRate, bitcoinUnit),
+            toListTile(
+                SelectedFee.slow, exchangeRate, bitcoinUnit, displayPreference),
             const Divider(),
             if (isDevEnv)
-              toListTile(SelectedFee.custom, exchangeRate, bitcoinUnit),
+              toListTile(SelectedFee.custom, exchangeRate, bitcoinUnit,
+                  displayPreference),
             if (isDevEnv) const Divider(),
           ])),
       footer: Column(

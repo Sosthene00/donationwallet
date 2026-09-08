@@ -8,10 +8,7 @@ import 'package:danawallet/generated/rust/frb_generated.dart';
 import 'package:danawallet/global_functions.dart';
 import 'package:danawallet/services/foreground_sync_service.dart';
 import 'package:danawallet/repositories/database_helper.dart';
-import 'package:danawallet/repositories/owned_outputs_repository.dart';
 import 'package:danawallet/repositories/settings_repository.dart';
-import 'package:danawallet/repositories/transactions_repository.dart';
-import 'package:danawallet/repositories/wallet_repository.dart';
 import 'package:danawallet/screens/home/home.dart';
 import 'package:danawallet/screens/onboarding/introduction.dart';
 import 'package:danawallet/screens/onboarding/register_dana_address.dart';
@@ -54,24 +51,13 @@ void main() async {
   // Initialize database
   await DatabaseHelper.instance.database;
 
-  // Migrate legacy SharedPreferences data to SQLite (for users upgrading from older app versions)
-  final spWallet = await WalletRepository.instance.readWallet();
-
-  if (spWallet != null) {
-    await migrateOutputsFromSharedPreferences();
-    await migrateTxHistoryFromSharedPreferences(spWallet.getChangeAddress());
-  }
-
-  // after database migration, enable foreign_keys pragma
-  DatabaseHelper.instance.enableForeignKeysPragma();
-
   final walletState = WalletState.create();
   final permissionState = await PermissionState.create();
   final syncProgress = SyncProgressState.create();
   final chainState = ChainState();
   final contactsState = ContactsState();
   final displayPreferencesState = await DisplayPreferencesState.create();
-  final fiatExchangeRate = await FiatExchangeRateState.create();
+  final fiatExchangeRate = FiatExchangeRateState();
 
   final syncOrchestrator = SyncOrchestrator(
     chainState: chainState,
@@ -81,7 +67,7 @@ void main() async {
   );
 
   // fetch the exchange rate, but don't await the response
-  fiatExchangeRate.updateExchangeRate();
+  fiatExchangeRate.updateExchangeRates();
 
   await precacheImages();
 

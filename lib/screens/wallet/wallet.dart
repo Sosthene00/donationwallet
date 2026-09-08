@@ -18,6 +18,7 @@ import 'package:danawallet/states/display_preferences_state.dart';
 import 'package:danawallet/states/fiat_exchange_rate_state.dart';
 import 'package:danawallet/states/sync_progress_state.dart';
 import 'package:danawallet/states/wallet_state.dart';
+import 'package:danawallet/widgets/alerts/inline_warning_banner.dart';
 import 'package:danawallet/widgets/buttons/footer/footer_button.dart';
 import 'package:danawallet/widgets/skeletons/main_screen_skeleton.dart';
 import 'package:flutter/material.dart';
@@ -120,110 +121,83 @@ class WalletScreenState extends State<WalletScreen> {
   }
 
   Widget buildOfflineStatus(ChainState chainState) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Bitcoin.orange.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Bitcoin.orange.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.cloud_off, color: Bitcoin.orange, size: 16),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              'Sync offline - balance may be outdated',
-              style: BitcoinTextStyle.body5(Bitcoin.orange),
-            ),
-          ),
-          GestureDetector(
-            onTap: () async {
-              // Show immediate feedback that retry is happening
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Row(
-                    children: [
-                      SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation(Bitcoin.white),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      const Text('Retrying connection...'),
-                    ],
-                  ),
-                  duration: const Duration(seconds: 2),
-                ),
-              );
-
-              final success = await chainState.reconnect();
-
-              if (mounted) {
-                // Clear the "retrying" message first
-                ScaffoldMessenger.of(context).clearSnackBars();
-
-                if (success) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Row(
-                        children: [
-                          Icon(Icons.check_circle,
-                              color: Bitcoin.green, size: 16),
-                          const SizedBox(width: 8),
-                          const Text('Successfully reconnected!'),
-                        ],
-                      ),
-                      backgroundColor: Bitcoin.green.withValues(alpha: 0.1),
-                      duration: const Duration(seconds: 3),
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Row(
-                        children: [
-                          Icon(Icons.error_outline,
-                              color: Bitcoin.orange, size: 16),
-                          const SizedBox(width: 8),
-                          const Text(
-                              'Still unable to connect. Please try again later.'),
-                        ],
-                      ),
-                      backgroundColor: Bitcoin.red.withValues(alpha: 0.8),
-                      duration: const Duration(seconds: 4),
-                    ),
-                  );
-                }
-              }
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Bitcoin.orange,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                'Retry',
-                style: BitcoinTextStyle.body5(Bitcoin.white),
-              ),
-            ),
-          ),
-        ],
-      ),
+    return InlineWarningBanner(
+      icon: Icons.cloud_off,
+      message: 'Sync offline - balance may be outdated',
+      actionLabel: 'Retry',
+      onActionPressed: () => _retryChainConnection(chainState),
     );
   }
 
-  Widget buildAmountDisplay(Amount amount, FiatExchangeRateState exchangeRate,
-      AmountDisplayUnit bitcoinUnit) {
+  Future<void> _retryChainConnection(ChainState chainState) async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation(Bitcoin.white),
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Text('Retrying connection...'),
+          ],
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+
+    final success = await chainState.reconnect();
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.check_circle, color: Bitcoin.green, size: 16),
+              const SizedBox(width: 8),
+              const Text('Successfully reconnected!'),
+            ],
+          ),
+          backgroundColor: Bitcoin.green.withValues(alpha: 0.1),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.error_outline, color: Bitcoin.orange, size: 16),
+              const SizedBox(width: 8),
+              const Text('Still unable to connect. Please try again later.'),
+            ],
+          ),
+          backgroundColor: Bitcoin.red.withValues(alpha: 0.8),
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    }
+  }
+
+  Widget buildAmountDisplay(
+      Amount amount,
+      FiatExchangeRateState exchangeRate,
+      AmountDisplayUnit bitcoinUnit,
+      DisplayPreferencesState displayPreference) {
     String btcAmount =
         hideAmount ? hideAmountFormat : amount.display(bitcoinUnit);
 
-    String fiatAmount =
-        hideAmount ? hideAmountFormat : exchangeRate.displayFiat(amount);
+    String fiatAmount = hideAmount
+        ? hideAmountFormat
+        : exchangeRate.displayFiat(amount, displayPreference.fiatCurrency);
 
     return GestureDetector(
       onTap: () => setState(() {
@@ -247,8 +221,11 @@ class WalletScreenState extends State<WalletScreen> {
     );
   }
 
-  ListTile toListTile(RecordedTransaction tx,
-      FiatExchangeRateState exchangeRate, AmountDisplayUnit bitcoinUnit) {
+  ListTile toListTile(
+      RecordedTransaction tx,
+      FiatExchangeRateState exchangeRate,
+      AmountDisplayUnit bitcoinUnit,
+      DisplayPreferencesState displayPreference) {
     Color? color;
     String amount;
     String amountprefix;
@@ -273,7 +250,8 @@ class WalletScreenState extends State<WalletScreen> {
         amountprefix = '+';
         amountFiat = hideAmount
             ? hideAmountFormat
-            : exchangeRate.displayFiat(incoming.amount);
+            : exchangeRate.displayFiat(
+                incoming.amount, displayPreference.fiatCurrency);
         leadingWidget = Image(
             image: const AssetImage("icons/receive.png", package: "bitcoin_ui"),
             color: Bitcoin.neutral3Dark);
@@ -298,7 +276,8 @@ class WalletScreenState extends State<WalletScreen> {
         amountprefix = '-';
         amountFiat = hideAmount
             ? hideAmountFormat
-            : exchangeRate.displayFiat(outgoing.totalOutgoing());
+            : exchangeRate.displayFiat(
+                outgoing.totalOutgoing(), displayPreference.fiatCurrency);
         // Show contact avatar if contact is known, otherwise show send icon
         final contact = paymentCode != null
             ? contactsState.getContactByPaymentCode(paymentCode)
@@ -331,7 +310,8 @@ class WalletScreenState extends State<WalletScreen> {
         amountprefix = '-';
         amountFiat = hideAmount
             ? hideAmountFormat
-            : exchangeRate.displayFiat(unknown.amount);
+            : exchangeRate.displayFiat(
+                unknown.amount, displayPreference.fiatCurrency);
         leadingWidget = Image(
             image: const AssetImage("icons/send.png", package: "bitcoin_ui"),
             color: Bitcoin.neutral3Dark);
@@ -358,8 +338,11 @@ class WalletScreenState extends State<WalletScreen> {
     );
   }
 
-  void _showFullTransactionHistory(List<RecordedTransaction> transactions,
-      FiatExchangeRateState exchangeRate, AmountDisplayUnit bitcoinUnit) {
+  void _showFullTransactionHistory(
+      List<RecordedTransaction> transactions,
+      FiatExchangeRateState exchangeRate,
+      AmountDisplayUnit bitcoinUnit,
+      DisplayPreferencesState displayPreference) {
     showAppBottomSheet(
       context: context,
       builder: (context) => DraggableScrollableSheet(
@@ -405,8 +388,8 @@ class WalletScreenState extends State<WalletScreen> {
                             const Divider(),
                         itemCount: transactions.length,
                         itemBuilder: (context, index) {
-                          return toListTile(
-                              transactions[index], exchangeRate, bitcoinUnit);
+                          return toListTile(transactions[index], exchangeRate,
+                              bitcoinUnit, displayPreference);
                         },
                       ),
               ),
@@ -417,8 +400,11 @@ class WalletScreenState extends State<WalletScreen> {
     );
   }
 
-  Widget buildTransactionHistory(List<RecordedTransaction> transactions,
-      FiatExchangeRateState exchangeRate, AmountDisplayUnit bitcoinUnit) {
+  Widget buildTransactionHistory(
+      List<RecordedTransaction> transactions,
+      FiatExchangeRateState exchangeRate,
+      AmountDisplayUnit bitcoinUnit,
+      DisplayPreferencesState displayPreference) {
     if (transactions.isEmpty) {
       return Center(
           child: Text('No transactions yet.',
@@ -440,7 +426,8 @@ class WalletScreenState extends State<WalletScreen> {
           return Column(
             children: [
               if (index > 0) const Divider(height: 1),
-              toListTile(preview[index], exchangeRate, bitcoinUnit),
+              toListTile(
+                  preview[index], exchangeRate, bitcoinUnit, displayPreference),
             ],
           );
         }),
@@ -448,7 +435,7 @@ class WalletScreenState extends State<WalletScreen> {
           const Divider(height: 1),
           GestureDetector(
             onTap: () => _showFullTransactionHistory(
-                transactions, exchangeRate, bitcoinUnit),
+                transactions, exchangeRate, bitcoinUnit, displayPreference),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Text(
@@ -680,14 +667,14 @@ class WalletScreenState extends State<WalletScreen> {
                     maintainState: true,
                     child: buildOfflineStatus(chainState)),
                 const SizedBox(height: 20.0),
-                buildAmountDisplay(
-                    amount, exchangeRate, displayPreference.amountDisplayUnit),
+                buildAmountDisplay(amount, exchangeRate,
+                    displayPreference.amountDisplayUnit, displayPreference),
                 const SizedBox(height: 20.0),
                 // Show Dana address banner if available
                 if (danaAddress != null) buildDanaAddressBanner(danaAddress),
                 const Spacer(),
                 buildTransactionHistory(walletState.transactions, exchangeRate,
-                    displayPreference.amountDisplayUnit),
+                    displayPreference.amountDisplayUnit, displayPreference),
                 buildBottomButtons(walletState.receivePaymentCode),
                 const SizedBox(
                   height: 20.0,

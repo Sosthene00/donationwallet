@@ -1,7 +1,7 @@
 name: danawallet
 description: A silent payments wallet built in flutter.
 publish_to: 'none'
-version: 0.8.1+43
+version: 0.8.2+48
 
 environment:
   sdk: ^3.5.2
@@ -12,7 +12,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   rust_lib_danawallet:
     path: rust_builder
-  flutter_rust_bridge: 2.11.1
+  flutter_rust_bridge: 2.12.0
   flutter_secure_storage: ^10.0.0
   provider: ^6.1.1
   barcode: ^2.2.5

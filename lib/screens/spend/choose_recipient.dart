@@ -1,7 +1,10 @@
 import 'package:bitcoin_ui/bitcoin_ui.dart';
 import 'package:danawallet/data/models/bip353_address.dart';
 import 'package:danawallet/data/models/contact.dart';
+import 'package:danawallet/extensions/bip321_uri.dart';
 import 'package:danawallet/exceptions.dart';
+import 'package:danawallet/generated/rust/api/bip321.dart';
+import 'package:danawallet/generated/rust/api/structs/amount.dart';
 import 'package:danawallet/generated/rust/api/validate.dart';
 import 'package:danawallet/global_functions.dart';
 import 'package:danawallet/screens/contacts/add_contact_sheet.dart';
@@ -30,6 +33,7 @@ class ChooseRecipientScreenState extends State<ChooseRecipientScreen> {
   late final TextEditingController textFieldController;
   String? _addressErrorText;
   bool _showContactSuggestions = true;
+  String? _externalPaymentInfo;
 
   @override
   void initState() {
@@ -79,13 +83,18 @@ class ChooseRecipientScreenState extends State<ChooseRecipientScreen> {
     try {
       final String resolvedPaymentCode;
       final Bip353Address? resolvedBip353;
+      Amount? parsedAmount;
 
       if (contact != null) {
         // Selected from contact list — use contact data directly, leave field unchanged.
+        _externalPaymentInfo = null;
         resolvedPaymentCode = contact.paymentCode;
         resolvedBip353 = contact.bip353Address;
       } else {
-        final textField = textFieldController.text.trim();
+        final external = _externalPaymentInfo?.trim();
+        final textField = (external != null && external.isNotEmpty)
+            ? external
+            : textFieldController.text.trim();
 
         if (textField.isEmpty) {
           throw Exception("Please enter a valid payment info");
@@ -93,7 +102,29 @@ class ChooseRecipientScreenState extends State<ChooseRecipientScreen> {
           throw Exception("You cannot send to yourself");
         }
 
-        if (textField.contains('@')) {
+        if (textField.toLowerCase().startsWith('bitcoin:')) {
+          Logger().d('Parsing BIP21/321 payment URI');
+
+          final parsed = parsePaymentUri(uri: textField);
+          // First check if there's a sp address in there
+          final reusablePaymentCode =
+              parsed.reusablePaymentCodeForNetwork(network);
+          final legacyPaymentCode = parsed.legacyPaymentCodeForNetwork(network);
+          if (reusablePaymentCode != null) {
+            resolvedPaymentCode = reusablePaymentCode;
+          } else if (legacyPaymentCode != null) {
+            resolvedPaymentCode = legacyPaymentCode;
+          } else {
+            // We don't have any valid payment code in URI
+            throw Exception('No valid address found');
+          }
+          parsedAmount = parsed.amount;
+          resolvedBip353 = null;
+
+          if (resolvedPaymentCode == youContact.paymentCode) {
+            throw Exception("You cannot send to yourself");
+          }
+        } else if (textField.contains('@')) {
           Logger().d('Resolving dana address: "$textField"');
 
           final parsed = Bip353Address.fromString(textField);
@@ -140,6 +171,7 @@ class ChooseRecipientScreenState extends State<ChooseRecipientScreen> {
             AmountSelectionScreen(
               paymentCode: resolvedPaymentCode,
               providedBip353: resolvedBip353,
+              initialAmount: parsedAmount,
             ));
       }
     } catch (e) {
@@ -160,7 +192,7 @@ class ChooseRecipientScreenState extends State<ChooseRecipientScreen> {
     ClipboardData? data = await Clipboard.getData(Clipboard.kTextPlain);
     if (data != null) {
       setState(() => _showContactSuggestions = false);
-      textFieldController.text = data.text ?? '';
+      _externalPaymentInfo = data.text ?? '';
       await onContinue();
     }
   }
@@ -174,7 +206,7 @@ class ChooseRecipientScreenState extends State<ChooseRecipientScreen> {
     );
     if (result is String && result != "") {
       setState(() => _showContactSuggestions = false);
-      textFieldController.text = result;
+      _externalPaymentInfo = result;
       await onContinue();
     }
   }
@@ -210,6 +242,7 @@ class ChooseRecipientScreenState extends State<ChooseRecipientScreen> {
                     }),
                     onChanged: (_) => setState(() {
                       _addressErrorText = null;
+                      _externalPaymentInfo = null;
                       _showContactSuggestions = true;
                     }),
                     style: BitcoinTextStyle.body4(Bitcoin.black),
@@ -247,7 +280,9 @@ class ChooseRecipientScreenState extends State<ChooseRecipientScreen> {
                         ),
                       ),
                     ),
-                  if (hasQuery && filteredContacts.isNotEmpty) ...[
+                  if (_showContactSuggestions &&
+                      hasQuery &&
+                      filteredContacts.isNotEmpty) ...[
                     const SizedBox(height: 8.0),
                     ConstrainedBox(
                       constraints: const BoxConstraints(maxHeight: 180),
